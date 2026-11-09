@@ -3,7 +3,10 @@ import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from database import get_all_jobs
+try:
+    from database import get_all_jobs
+except ImportError:
+    from src.database import get_all_jobs
 
 def normalize_skill(skill: str) -> str:
     """Normalize skill string (e.g., 'React.js' -> 'react', 'Node.js' -> 'node')"""

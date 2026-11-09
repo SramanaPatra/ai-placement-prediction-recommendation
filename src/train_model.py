@@ -11,7 +11,10 @@ from sklearn.metrics import (
     roc_auc_score, confusion_matrix, classification_report, roc_curve
 )
 
-from generate_dataset import generate_placement_dataset
+try:
+    from generate_dataset import generate_placement_dataset
+except ImportError:
+    from src.generate_dataset import generate_placement_dataset
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODELS_DIR = os.path.join(BASE_DIR, "models")

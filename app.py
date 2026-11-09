@@ -26,91 +26,504 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for modern responsive design (Desktop & Tablet)
+# -------------------------------------------------------------
+# APPLE LIQUID GLASS / VISIONOS DESIGN SYSTEM STYLESHEET
+# -------------------------------------------------------------
 st.markdown("""
 <style>
-    .main-title {
-        font-size: 2.3rem;
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.62);
+        --glass-bg-hover: rgba(255, 255, 255, 0.80);
+        --glass-border: rgba(255, 255, 255, 0.85);
+        --glass-border-subtle: rgba(255, 255, 255, 0.6);
+        --glass-shadow: 0 16px 36px -6px rgba(31, 38, 135, 0.07), inset 0 1.5px 2px rgba(255, 255, 255, 0.95);
+        --glass-shadow-hover: 0 22px 45px -4px rgba(37, 99, 235, 0.12), inset 0 1.5px 2px rgba(255, 255, 255, 1);
+        --brand-blue: #2563EB;
+        --brand-indigo: #4F46E5;
+        --brand-purple: #7C3AED;
+        --brand-cyan: #06B6D4;
+        --text-primary: #0F172A;
+        --text-secondary: #475569;
+        --text-muted: #64748B;
+    }
+
+    /* 1. LIQUID GLASS BACKGROUND ENVIRONMENT */
+    .stApp {
+        background:
+            radial-gradient(1200px circle at 8% 10%, rgba(224, 231, 255, 0.85) 0%, transparent 55%),
+            radial-gradient(900px circle at 92% 12%, rgba(219, 234, 254, 0.8) 0%, transparent 50%),
+            radial-gradient(1000px circle at 50% 45%, rgba(240, 249, 255, 0.75) 0%, transparent 60%),
+            radial-gradient(1200px circle at 85% 88%, rgba(238, 242, 255, 0.82) 0%, transparent 55%),
+            radial-gradient(900px circle at 15% 92%, rgba(224, 242, 254, 0.75) 0%, transparent 50%),
+            linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 50%, #EEF2F6 100%) !important;
+        background-attachment: fixed !important;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Top Header Bar Polish */
+    header[data-testid="stHeader"] {
+        background: rgba(255, 255, 255, 0.35) !important;
+        backdrop-filter: blur(24px) saturate(190%) !important;
+        -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.65) !important;
+    }
+
+    /* 2. TRANSLUCENT FLOATING GLASS SIDEBAR */
+    [data-testid="stSidebar"] {
+        background: rgba(255, 255, 255, 0.52) !important;
+        backdrop-filter: blur(35px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(35px) saturate(200%) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.8) !important;
+        box-shadow: 12px 0 35px -5px rgba(31, 38, 135, 0.04) !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {
+        padding: 1.5rem 1.25rem !important;
+    }
+    .sidebar-header-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(255, 255, 255, 0.68);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 18px;
+        padding: 14px 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 18px rgba(37, 99, 235, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+    }
+    .sidebar-brand-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 50%, #06B6D4 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        color: white;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32);
+    }
+    .sidebar-brand-title {
         font-weight: 800;
-        background: linear-gradient(90deg, #1E3A8A, #3B82F6, #10B981);
+        font-size: 1.12rem;
+        color: #0F172A;
+        letter-spacing: -0.02em;
+    }
+    .sidebar-brand-sub {
+        font-size: 0.72rem;
+        color: #64748B;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .sidebar-info-card {
+        background: rgba(255, 255, 255, 0.58);
+        border: 1px solid rgba(255, 255, 255, 0.85);
+        border-radius: 16px;
+        padding: 14px 16px;
+        margin-top: 24px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+    }
+
+    /* 3. HERO HEADER SECTION */
+    .hero-header-container {
+        margin-bottom: 1.8rem;
+        padding: 4px 0;
+    }
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.78);
+        border: 1px solid rgba(255, 255, 255, 0.95);
+        border-radius: 9999px;
+        padding: 5px 14px;
+        font-size: 0.73rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        color: #2563EB;
+        box-shadow: 0 2px 10px rgba(37, 99, 235, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
+        backdrop-filter: blur(14px);
+        margin-bottom: 12px;
+    }
+    .badge-glow-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #10B981;
+        box-shadow: 0 0 8px #10B981;
+        display: inline-block;
+    }
+    .main-title {
+        font-size: 2.35rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 35%, #4F46E5 70%, #06B6D4 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0.2rem;
+        margin-bottom: 0.35rem;
+        filter: drop-shadow(0 2px 6px rgba(79, 70, 229, 0.08));
     }
     .subtitle {
-        color: #64748B;
-        font-size: 1.05rem;
-        margin-bottom: 1.5rem;
+        color: #475569;
+        font-size: 1.02rem;
+        font-weight: 400;
+        line-height: 1.5;
+        max-width: 920px;
     }
-    .card {
-        background-color: #FFFFFF;
-        border-radius: 12px;
-        padding: 18px 22px;
-        border: 1px solid #E2E8F0;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        margin-bottom: 1rem;
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    /* 4. VISIONOS FLOATING PILL TABS */
+    [data-baseweb="tab-list"] {
+        background: rgba(255, 255, 255, 0.65) !important;
+        backdrop-filter: blur(25px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.85) !important;
+        border-radius: 9999px !important;
+        padding: 6px 8px !important;
+        gap: 6px !important;
+        box-shadow: 0 10px 25px -3px rgba(37, 99, 235, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
+        margin-bottom: 2rem !important;
     }
-    .card:hover {
-        box-shadow: 0 8px 12px -2px rgba(0, 0, 0, 0.08);
+    [data-baseweb="tab"] {
+        border-radius: 9999px !important;
+        padding: 9px 20px !important;
+        font-weight: 600 !important;
+        color: #475569 !important;
+        border: none !important;
+        background: transparent !important;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        font-size: 0.92rem !important;
     }
+    [data-baseweb="tab"]:hover {
+        background: rgba(255, 255, 255, 0.45) !important;
+        color: #1E3A8A !important;
+    }
+    [data-baseweb="tab"][aria-selected="true"] {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.92) 100%) !important;
+        color: #1E40AF !important;
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.15), inset 0 1px 1.5px rgba(255, 255, 255, 1) !important;
+    }
+
+    /* 5. LIQUID GLASS CARDS & FORMS */
+    .liquid-glass-card, .card {
+        background: rgba(255, 255, 255, 0.65) !important;
+        backdrop-filter: blur(28px) saturate(190%) !important;
+        -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.85) !important;
+        border-radius: 22px !important;
+        padding: 24px 28px !important;
+        box-shadow: 0 14px 35px -4px rgba(31, 38, 135, 0.06), inset 0 1.5px 2px rgba(255, 255, 255, 0.95), inset 0 -1px 2px rgba(0, 0, 0, 0.02) !important;
+        margin-bottom: 1.25rem !important;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        position: relative !important;
+    }
+    .liquid-glass-card:hover, .card:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 20px 45px -4px rgba(37, 99, 235, 0.1), inset 0 1.5px 2px rgba(255, 255, 255, 1) !important;
+    }
+
+    [data-testid="stForm"] {
+        background: rgba(255, 255, 255, 0.62) !important;
+        backdrop-filter: blur(32px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.85) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 16px 40px -4px rgba(31, 38, 135, 0.07), inset 0 1.5px 2px rgba(255, 255, 255, 1) !important;
+        padding: 26px 28px !important;
+    }
+
+    /* 6. FROSTED GLASS INPUTS */
+    div[data-baseweb="input"] {
+        background: rgba(255, 255, 255, 0.72) !important;
+        border: 1px solid rgba(203, 213, 225, 0.65) !important;
+        border-radius: 14px !important;
+        backdrop-filter: blur(14px) !important;
+        transition: all 0.25s ease !important;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+    }
+    div[data-baseweb="input"]:focus-within {
+        background: rgba(255, 255, 255, 0.95) !important;
+        border-color: #3B82F6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18), inset 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+    }
+    div[data-baseweb="select"] > div {
+        background: rgba(255, 255, 255, 0.72) !important;
+        border: 1px solid rgba(203, 213, 225, 0.65) !important;
+        border-radius: 14px !important;
+        backdrop-filter: blur(14px) !important;
+    }
+    div[data-baseweb="select"]:focus-within > div {
+        border-color: #3B82F6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18) !important;
+    }
+
+    /* 7. SLIDERS */
+    div[data-testid="stSlider"] [role="slider"] {
+        background: linear-gradient(135deg, #1D4ED8 0%, #3B82F6 100%) !important;
+        box-shadow: 0 3px 12px rgba(37, 99, 235, 0.45), 0 0 0 3px rgba(255, 255, 255, 0.95) !important;
+        border: none !important;
+        height: 20px !important;
+        width: 20px !important;
+        transition: transform 0.15s ease !important;
+    }
+    div[data-testid="stSlider"] [role="slider"]:hover {
+        transform: scale(1.18) !important;
+    }
+
+    /* 8. TAGS & MULTISELECT */
+    div[data-baseweb="tag"] {
+        background: rgba(238, 242, 255, 0.85) !important;
+        border: 1px solid rgba(199, 210, 254, 0.8) !important;
+        border-radius: 10px !important;
+        color: #3730A3 !important;
+        font-weight: 600 !important;
+        backdrop-filter: blur(8px) !important;
+        padding: 3px 8px !important;
+        transition: all 0.2s ease !important;
+    }
+    div[data-baseweb="tag"]:hover {
+        background: rgba(224, 231, 255, 1) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Custom Glass Badges */
     .badge-eligible {
-        background-color: #DCFCE7;
-        color: #166534;
-        padding: 4px 10px;
-        border-radius: 9999px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        white-space: nowrap;
+        background: linear-gradient(135deg, rgba(220, 252, 231, 0.9) 0%, rgba(209, 250, 229, 0.7) 100%) !important;
+        color: #065F46 !important;
+        border: 1px solid rgba(110, 231, 183, 0.8) !important;
+        padding: 5px 12px !important;
+        border-radius: 9999px !important;
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        white-space: nowrap !important;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12) !important;
     }
     .badge-ineligible {
-        background-color: #FEE2E2;
-        color: #991B1B;
-        padding: 4px 10px;
-        border-radius: 9999px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        white-space: nowrap;
+        background: linear-gradient(135deg, rgba(254, 226, 226, 0.9) 0%, rgba(254, 202, 202, 0.7) 100%) !important;
+        color: #991B1B !important;
+        border: 1px solid rgba(252, 165, 165, 0.8) !important;
+        padding: 5px 12px !important;
+        border-radius: 9999px !important;
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        white-space: nowrap !important;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.12) !important;
     }
     .tag-matched {
-        background-color: #D1FAE5;
-        color: #065F46;
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-size: 0.78rem;
-        display: inline-block;
-        margin: 2px;
+        background: rgba(209, 250, 229, 0.82) !important;
+        color: #065F46 !important;
+        border: 1px solid rgba(167, 243, 208, 0.9) !important;
+        padding: 4px 10px !important;
+        border-radius: 8px !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+        display: inline-block !important;
+        margin: 3px !important;
+        backdrop-filter: blur(8px) !important;
+        transition: all 0.2s ease !important;
+    }
+    .tag-matched:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.18) !important;
     }
     .tag-missing {
-        background-color: #FEE2E2;
-        color: #991B1B;
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-size: 0.78rem;
-        display: inline-block;
-        margin: 2px;
+        background: rgba(254, 226, 226, 0.82) !important;
+        color: #991B1B !important;
+        border: 1px solid rgba(254, 202, 202, 0.9) !important;
+        padding: 4px 10px !important;
+        border-radius: 8px !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+        display: inline-block !important;
+        margin: 3px !important;
+        backdrop-filter: blur(8px) !important;
     }
     .tag-pref {
-        background-color: #E0E7FF;
-        color: #3730A3;
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-size: 0.78rem;
-        display: inline-block;
-        margin: 2px;
+        background: rgba(224, 231, 255, 0.82) !important;
+        color: #3730A3 !important;
+        border: 1px solid rgba(199, 210, 254, 0.9) !important;
+        padding: 4px 10px !important;
+        border-radius: 8px !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+        display: inline-block !important;
+        margin: 3px !important;
+        backdrop-filter: blur(8px) !important;
     }
-    /* Responsive media queries for Desktop and Tablet */
+
+    /* 9. PREDICTION STATUS BANNERS */
+    .glass-status-banner {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        border-radius: 18px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.03);
+        transition: all 0.25s ease;
+    }
+    .status-high {
+        background: linear-gradient(135deg, rgba(220, 252, 231, 0.82) 0%, rgba(209, 250, 229, 0.6) 100%);
+        border: 1px solid rgba(110, 231, 183, 0.8);
+        color: #065F46;
+    }
+    .status-moderate {
+        background: linear-gradient(135deg, rgba(254, 243, 199, 0.82) 0%, rgba(253, 230, 138, 0.6) 100%);
+        border: 1px solid rgba(251, 191, 36, 0.8);
+        color: #92400E;
+    }
+    .status-risk {
+        background: linear-gradient(135deg, rgba(254, 226, 226, 0.82) 0%, rgba(254, 202, 202, 0.6) 100%);
+        border: 1px solid rgba(248, 113, 113, 0.8);
+        color: #991B1B;
+    }
+    .status-icon {
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+    .status-title {
+        font-weight: 700;
+        font-size: 0.98rem;
+        margin-bottom: 4px;
+    }
+    .status-desc {
+        font-size: 0.86rem;
+        line-height: 1.45;
+        opacity: 0.95;
+    }
+
+    /* 10. AI RECOMMENDATION CARDS */
+    .glass-rec-card {
+        background: rgba(255, 255, 255, 0.68);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.85);
+        border-left: 4px solid #3B82F6;
+        border-radius: 14px;
+        padding: 12px 16px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        box-shadow: 0 4px 14px rgba(31, 38, 135, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+        transition: all 0.25s ease;
+    }
+    .glass-rec-card:hover {
+        transform: translateX(4px);
+        background: rgba(255, 255, 255, 0.9);
+        border-left-color: #6366F1;
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.12);
+    }
+    .rec-bullet {
+        color: #3B82F6;
+        font-weight: 800;
+        font-size: 1.1rem;
+        line-height: 1.2;
+    }
+    .rec-text {
+        font-size: 0.87rem;
+        color: #1E293B;
+        line-height: 1.45;
+    }
+
+    /* 11. PORTFOLIO & EXTRACURRICULAR GLASS PANEL */
+    .glass-subpanel {
+        background: linear-gradient(135deg, rgba(248, 250, 252, 0.75) 0%, rgba(241, 245, 249, 0.55) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 18px;
+        padding: 18px 22px;
+        margin-top: 14px;
+        margin-bottom: 16px;
+        backdrop-filter: blur(20px);
+        box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), 0 4px 16px rgba(0, 0, 0, 0.02);
+    }
+    .glass-summary-pill {
+        background: rgba(255, 255, 255, 0.65);
+        border: 1px solid rgba(255, 255, 255, 0.85);
+        border-radius: 12px;
+        padding: 10px 16px;
+        margin-bottom: 14px;
+        font-size: 0.86rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    }
+
+    /* 12. BUTTONS (VISIONOS LIQUID BUTTONS) */
+    div.stButton > button, [data-testid="stForm"] button {
+        background: linear-gradient(135deg, #1D4ED8 0%, #3B82F6 45%, #6366F1 100%) !important;
+        color: #FFFFFF !important;
+        border: 1px solid rgba(255, 255, 255, 0.35) !important;
+        border-radius: 14px !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.015em !important;
+        padding: 11px 24px !important;
+        box-shadow: 0 6px 20px -2px rgba(59, 130, 246, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.45) !important;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    div.stButton > button:hover, [data-testid="stForm"] button:hover {
+        transform: translateY(-2px) scale(1.01) !important;
+        box-shadow: 0 10px 28px -2px rgba(59, 130, 246, 0.55), inset 0 1px 1.5px rgba(255, 255, 255, 0.6) !important;
+    }
+    div.stButton > button:active, [data-testid="stForm"] button:active {
+        transform: translateY(0) scale(0.99) !important;
+    }
+
+    div[data-testid="stDownloadButton"] > button {
+        background: linear-gradient(135deg, #059669 0%, #10B981 50%, #06B6D4 100%) !important;
+        color: #FFFFFF !important;
+        border: 1px solid rgba(255, 255, 255, 0.35) !important;
+        border-radius: 14px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 6px 20px -2px rgba(16, 185, 129, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.45) !important;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    div[data-testid="stDownloadButton"] > button:hover {
+        transform: translateY(-2px) scale(1.01) !important;
+        box-shadow: 0 10px 28px -2px rgba(16, 185, 129, 0.5), inset 0 1px 1.5px rgba(255, 255, 255, 0.6) !important;
+    }
+
+    /* 13. METRIC CARDS */
+    [data-testid="stMetric"] {
+        background: rgba(255, 255, 255, 0.62) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.8) !important;
+        border-radius: 18px !important;
+        padding: 16px 20px !important;
+        box-shadow: 0 8px 24px -2px rgba(31, 38, 135, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
+        transition: transform 0.2s ease !important;
+    }
+    [data-testid="stMetric"]:hover {
+        transform: translateY(-2px) !important;
+    }
+
+    /* 14. EXPANDERS */
+    [data-testid="stExpander"] {
+        background: rgba(255, 255, 255, 0.5) !important;
+        border: 1px solid rgba(255, 255, 255, 0.75) !important;
+        border-radius: 18px !important;
+        backdrop-filter: blur(18px) !important;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02) !important;
+        overflow: hidden !important;
+        margin-bottom: 1rem !important;
+    }
+
+    /* 15. RESPONSIVE BREAKPOINTS */
     @media screen and (max-width: 992px) {
         .main-title {
-            font-size: 1.85rem !important;
+            font-size: 1.95rem !important;
         }
         .subtitle {
-            font-size: 0.95rem !important;
-            margin-bottom: 1rem !important;
+            font-size: 0.94rem !important;
         }
-        .card {
-            padding: 14px 16px !important;
-            margin-bottom: 0.85rem !important;
+        .liquid-glass-card, .card {
+            padding: 16px 18px !important;
         }
         div[data-testid="column"] {
             min-width: 260px !important;
@@ -119,21 +532,18 @@ st.markdown("""
     }
     @media screen and (max-width: 768px) {
         .main-title {
-            font-size: 1.5rem !important;
+            font-size: 1.6rem !important;
         }
         .subtitle {
             font-size: 0.88rem !important;
-        }
-        .card {
-            padding: 12px 14px !important;
         }
         div[data-testid="column"] {
             min-width: 100% !important;
             flex: 1 1 100% !important;
         }
-        .tag-matched, .tag-missing, .tag-pref {
-            font-size: 0.72rem !important;
-            padding: 2px 6px !important;
+        [data-baseweb="tab-list"] {
+            border-radius: 16px !important;
+            flex-wrap: wrap !important;
         }
     }
 </style>
@@ -161,12 +571,35 @@ ALL_SKILLS = [
     "Computer Networks", "Cybersecurity", "Statistics", "Power BI", "Tableau", "Communication Skills"
 ]
 
-# Sidebar
-st.sidebar.markdown("### 🎓 Student Profile Setup")
-preset = st.sidebar.selectbox(
-    "Load Profile Preset",
-    ["Custom Input", "🌟 High Achiever (Software)", "🤖 Data Science Enthusiast", "⚠️ Student Needing Guidance"]
-)
+# Sidebar with Liquid Glass Aesthetics
+with st.sidebar:
+    st.markdown("""
+    <div class="sidebar-header-card">
+        <div class="sidebar-brand-icon">🎓</div>
+        <div>
+            <div class="sidebar-brand-title">Placement AI</div>
+            <div class="sidebar-brand-sub">Apple VisionOS Edition</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("#### ⚡ Student Profile Setup")
+    preset = st.selectbox(
+        "Load Profile Preset",
+        ["Custom Input", "🌟 High Achiever (Software)", "🤖 Data Science Enthusiast", "⚠️ Student Needing Guidance"],
+        help="Quickly populate candidate credentials with calibrated student archetypes"
+    )
+    
+    st.markdown("""
+    <div class="sidebar-info-card">
+        <div style="font-weight: 700; color: #1E40AF; font-size: 0.82rem; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+            <span>✨</span> Liquid Glass Engine
+        </div>
+        <div style="font-size: 0.77rem; color: #64748B; line-height: 1.45;">
+            Dynamic ML inference pipeline with real-time risk classification, skill gap vectorization, and TPO batch analytics.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Set defaults based on preset
 if preset == "🌟 High Achiever (Software)":
@@ -239,13 +672,28 @@ tabs = st.tabs([
 # TAB 1: PLACEMENT PREDICTION
 # -------------------------------------------------------------
 with tabs[0]:
-    st.markdown("<div class='main-title'>AI-Based Placement Prediction</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitle'>Evaluates academic credentials, practical projects, coding acumen, and experience to compute placement readiness.</div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="hero-header-container">
+        <div class="hero-badge">
+            <span class="badge-glow-dot"></span>
+            <span>APPLE VISIONOS DESIGN SYSTEM • AI PLACEMENT PREDICTOR</span>
+        </div>
+        <div class="main-title">AI-Based Placement Prediction</div>
+        <div class="subtitle">Evaluates academic credentials, practical projects, algorithmic acumen, and experience to compute placement readiness.</div>
+    </div>
+    """, unsafe_allow_html=True)
     
     col1, col2 = st.columns([1.2, 1.0])
     
     with col1:
-        st.markdown("#### 📝 Candidate Assessment Form")
+        st.markdown("""
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <h4 style="margin:0; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:8px;">
+                <span>📝</span> Candidate Assessment Form
+            </h4>
+            <span class="hero-badge" style="margin:0; padding:3px 10px; font-size:0.68rem;">LIVE PROFILER</span>
+        </div>
+        """, unsafe_allow_html=True)
         with st.form("placement_form"):
             name = st.text_input("Full Name", value=default_name)
             branch = st.selectbox("Engineering Branch", ["Computer Science & Engg", "Information Technology", "AI & Data Science", "Electronics & Comm.", "Mechanical Engg", "Civil Engg"])
@@ -262,14 +710,20 @@ with tabs[0]:
                 projects = st.number_input("Major / Minor Projects", min_value=0, max_value=8, value=int(default_projects))
                 soft_skills = st.slider("Soft Skills & Interview Rating (1 - 10)", min_value=1.0, max_value=10.0, value=float(default_soft), step=0.5)
             
-            st.markdown("##### 🏆 Portfolio & Extracurricular Excellence")
+            st.markdown("""
+            <div class="glass-subpanel">
+                <div style="font-weight:700; color:#1E3A8A; font-size:0.92rem; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+                    <span>🏆</span> Portfolio & Extracurricular Excellence
+                </div>
+            """, unsafe_allow_html=True)
             p_col1, p_col2, p_col3 = st.columns(3)
             with p_col1:
-                certifications = st.slider("📜 Technical Certifications", min_value=0, max_value=10, value=int(default_certifications), step=1, help="Industry certifications (AWS, Azure, GCP, Oracle Java, etc.)")
+                certifications = st.slider("📜 Certifications", min_value=0, max_value=10, value=int(default_certifications), step=1, help="Industry certifications (AWS, Azure, GCP, Oracle Java, etc.)")
             with p_col2:
-                github_repos = st.slider("🐙 GitHub Repositories", min_value=0, max_value=30, value=int(default_github), step=1, help="Public GitHub repositories showcasing project code and commit history")
+                github_repos = st.slider("🐙 GitHub Repos", min_value=0, max_value=30, value=int(default_github), step=1, help="Public GitHub repositories showcasing project code and commit history")
             with p_col3:
-                hackathons = st.slider("🥇 Hackathon Wins / Podiums", min_value=0, max_value=8, value=int(default_hackathons), step=1, help="Hackathon victories, finalist ranks, or podium finishes")
+                hackathons = st.slider("🥇 Hackathon Wins", min_value=0, max_value=8, value=int(default_hackathons), step=1, help="Hackathon victories, finalist ranks, or podium finishes")
+            st.markdown("</div>", unsafe_allow_html=True)
             
             skills_selected = st.multiselect(
                 "Technical Skills & Tooling",
@@ -318,54 +772,117 @@ with tabs[0]:
     )
     
     with col2:
-        st.markdown("#### 🎯 Placement Prediction Output")
+        st.markdown("""
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <h4 style="margin:0; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:8px;">
+                <span>🎯</span> Placement Readiness Output
+            </h4>
+            <span class="badge-eligible" style="font-size:0.72rem;">ML INFERENCE V2.4</span>
+        </div>
+        """, unsafe_allow_html=True)
         
-        # Plotly Gauge Chart
+        # Plotly Gauge Chart with transparent glass integration
         gauge_color = "#10B981" if prob >= 0.75 else ("#F59E0B" if prob >= 0.45 else "#EF4444")
         
         fig = go.Figure(go.Indicator(
             mode="gauge+number",
             value=prob_percent,
             domain={'x': [0, 1], 'y': [0, 1]},
-            title={'text': "Placement Readiness Score", 'font': {'size': 20, 'color': '#1E293B'}},
-            number={'suffix': "%", 'font': {'size': 38, 'color': gauge_color}},
+            title={'text': "Placement Readiness Score", 'font': {'size': 18, 'color': '#0F172A', 'family': 'Plus Jakarta Sans, sans-serif'}},
+            number={'suffix': "%", 'font': {'size': 38, 'color': gauge_color, 'family': 'Plus Jakarta Sans, sans-serif'}},
             gauge={
-                'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "#94A3B8"},
-                'bar': {'color': gauge_color},
-                'bgcolor': "#F1F5F9",
+                'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "#CBD5E1"},
+                'bar': {'color': gauge_color, 'thickness': 0.28},
+                'bgcolor': "rgba(241, 245, 249, 0.45)",
                 'borderwidth': 1,
-                'bordercolor': "#E2E8F0",
+                'bordercolor': "rgba(255, 255, 255, 0.8)",
                 'steps': [
-                    {'range': [0, 45], 'color': '#FEE2E2'},
-                    {'range': [45, 75], 'color': '#FEF3C7'},
-                    {'range': [75, 100], 'color': '#DCFCE7'}
+                    {'range': [0, 45], 'color': 'rgba(254, 226, 226, 0.55)'},
+                    {'range': [45, 75], 'color': 'rgba(254, 243, 199, 0.55)'},
+                    {'range': [75, 100], 'color': 'rgba(220, 252, 231, 0.55)'}
                 ],
                 'threshold': {
-                    'line': {'color': "black", 'width': 3},
-                    'thickness': 0.75,
+                    'line': {'color': gauge_color, 'width': 4},
+                    'thickness': 0.8,
                     'value': prob_percent
                 }
             }
         ))
-        fig.update_layout(height=260, margin=dict(l=20, r=20, t=40, b=10))
+        fig.update_layout(
+            height=250,
+            margin=dict(l=15, r=15, t=35, b=10),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(family="Plus Jakarta Sans, sans-serif")
+        )
         st.plotly_chart(fig, use_container_width=True)
         
-        # Status Box
+        # Status Box (Apple Liquid Glass status card)
         if prob >= 0.75:
-            st.success(f"**Status: {status}**\n\nThe candidate meets high placement probability benchmarks across academics, technical, and portfolio evaluation.")
+            st.markdown(f"""
+            <div class="glass-status-banner status-high">
+                <div class="status-icon">🌟</div>
+                <div>
+                    <div class="status-title">Status: {status}</div>
+                    <div class="status-desc">The candidate meets tier-1 placement probability benchmarks across academics, algorithmic coding, and portfolio evaluation.</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
         elif prob >= 0.45:
-            st.warning(f"**Status: {status}**\n\nThe candidate has competitive baseline metrics but needs strengthening in key evaluated parameters.")
+            st.markdown(f"""
+            <div class="glass-status-banner status-moderate">
+                <div class="status-icon">⚡</div>
+                <div>
+                    <div class="status-title">Status: {status}</div>
+                    <div class="status-desc">The candidate has competitive baseline metrics but needs strengthening in key evaluated parameters before company visits.</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
         else:
-            st.error(f"**Status: {status}**\n\nHigh risk of campus placement rejection. Follow targeted guidance below to clear eligibility thresholds.")
+            st.markdown(f"""
+            <div class="glass-status-banner status-risk">
+                <div class="status-icon">⚠️</div>
+                <div>
+                    <div class="status-title">Status: {status}</div>
+                    <div class="status-desc">Elevated risk of screening rejection. Follow targeted guidance below to clear company eligibility cutoffs.</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
             
-        # Key Recommendations
-        st.markdown("##### 📌 AI-Powered Personalized Recommendations:")
+        # Summary pill for extracurriculars
+        st.markdown(f"""
+        <div class="glass-summary-pill">
+            <span>📜 <b>{certifications}</b> Certifications</span> &nbsp;•&nbsp;
+            <span>🐙 <b>{github_repos}</b> Repos</span> &nbsp;•&nbsp;
+            <span>🥇 <b>{hackathons}</b> Hackathons</span>
+        </div>
+        """, unsafe_allow_html=True)
+            
+        # Key Recommendations in Liquid Glass cards
+        st.markdown("""
+        <div style="display:flex; align-items:center; gap:8px; margin-top:14px; margin-bottom:10px;">
+            <span style="font-size:1.1rem;">💡</span>
+            <span style="font-weight:700; color:#1E3A8A; font-size:0.95rem;">AI-Powered Action Plan & Guidance:</span>
+        </div>
+        """, unsafe_allow_html=True)
         for rec in result["recommendations"]:
-            st.markdown(f"- {rec}")
+            st.markdown(f"""
+            <div class="glass-rec-card">
+                <div class="rec-bullet">⚡</div>
+                <div class="rec-text">{rec}</div>
+            </div>
+            """, unsafe_allow_html=True)
             
-        # Downloadable PDF Report Button
-        st.markdown("---")
-        st.markdown("##### 📄 Export Student Placement Report")
+        # Downloadable PDF Report Panel
+        st.markdown("""
+        <div style="background: rgba(255, 255, 255, 0.55); border: 1px solid rgba(255, 255, 255, 0.85); border-radius: 16px; padding: 14px 18px; margin-top: 14px; backdrop-filter: blur(16px);">
+            <div style="font-weight: 700; color: #1E3A8A; font-size: 0.92rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                <span>📄</span> Official Placement Readiness Report
+            </div>
+            <div style="font-size: 0.8rem; color: #64748B; margin-bottom: 12px; line-height: 1.4;">
+                Download an official student PDF portfolio containing ML readiness score, academic metrics, AI guidance, and matched company roles.
+            </div>
+        """, unsafe_allow_html=True)
         st.download_button(
             label="📥 Download Placement Readiness & Job Report (PDF)",
             data=pdf_report_bytes,
@@ -374,6 +891,7 @@ with tabs[0]:
             use_container_width=True,
             help="Download formal PDF report with placement readiness score, competency metrics, AI guidance, and matching jobs."
         )
+        st.markdown("</div>", unsafe_allow_html=True)
             
         # Save to DB option
         if submit_btn:
@@ -392,23 +910,32 @@ with tabs[0]:
 # TAB 2: AI JOB RECOMMENDATION & SKILL MATCHING
 # -------------------------------------------------------------
 with tabs[1]:
-    st.markdown("<div class='main-title'>AI Job Recommender & Skill Gap Analysis</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitle'>Matches student profile against company openings using TF-IDF Content-Based Filtering, eligibility checking, and skill gap identification.</div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="hero-header-container">
+        <div class="hero-badge">
+            <span class="badge-glow-dot"></span>
+            <span>TF-IDF COSINE SIMILARITY • REAL-TIME SKILL GAP VECTORIZATION</span>
+        </div>
+        <div class="main-title">AI Job Recommender & Skill Gap Analysis</div>
+        <div class="subtitle">Matches candidate profile against company openings using Content-Based Filtering, eligibility cutoffs, and skill gap identification.</div>
+    </div>
+    """, unsafe_allow_html=True)
     
-    f1, f2, f3 = st.columns([1.5, 1, 1])
-    with f1:
-        rec_skills = st.multiselect(
-            "Filter / Adjust Candidate Skills",
-            options=ALL_SKILLS,
-            default=[s for s in skills_selected if s in ALL_SKILLS] if skills_selected else ["Python", "SQL", "Data Structures", "Algorithms"]
-        )
-    with f2:
-        domain_filter = st.selectbox(
-            "Target Department / Domain",
-            ["All", "Software Engineering", "Artificial Intelligence", "Cloud / Backend", "FinTech", "Security & Risk", "IT Services"]
-        )
-    with f3:
-        top_k = st.slider("Max Job Recommendations", min_value=3, max_value=12, value=6)
+    with st.container():
+        f1, f2, f3 = st.columns([1.5, 1, 1])
+        with f1:
+            rec_skills = st.multiselect(
+                "Filter / Adjust Candidate Skills",
+                options=ALL_SKILLS,
+                default=[s for s in skills_selected if s in ALL_SKILLS] if skills_selected else ["Python", "SQL", "Data Structures", "Algorithms"]
+            )
+        with f2:
+            domain_filter = st.selectbox(
+                "Target Department / Domain",
+                ["All", "Software Engineering", "Artificial Intelligence", "Cloud / Backend", "FinTech", "Security & Risk", "IT Services"]
+            )
+        with f3:
+            top_k = st.slider("Max Job Recommendations", min_value=3, max_value=12, value=6)
         
     recommended_jobs = recommender.recommend_jobs(
         student_skills=rec_skills,
@@ -425,22 +952,28 @@ with tabs[1]:
         
         for job in recommended_jobs:
             with st.container():
-                st.markdown("<div class='card'>", unsafe_allow_html=True)
+                st.markdown("<div class='liquid-glass-card'>", unsafe_allow_html=True)
                 
                 # Card Header
                 h_col1, h_col2 = st.columns([2.5, 1])
                 with h_col1:
-                    st.markdown(f"### {job['role_title']} &nbsp;•&nbsp; <span style='color:#2563EB;'>{job['company_name']}</span>", unsafe_allow_html=True)
-                    st.markdown(f"**Domain:** {job['department']} &nbsp;|&nbsp; **Location:** {job['location']} &nbsp;|&nbsp; **CTC:** `₹ {job['salary_lpa']} LPA`")
+                    st.markdown(f"""
+                    <h3 style='margin:0 0 6px 0; font-weight:800; font-size:1.3rem; color:#0F172A;'>
+                        {job['role_title']} &nbsp;•&nbsp; <span style='background:linear-gradient(135deg, #2563EB, #7C3AED); -webkit-background-clip:text; -webkit-text-fill-color:transparent;'>{job['company_name']}</span>
+                    </h3>
+                    <div style='color:#475569; font-size:0.88rem;'>
+                        <b>Domain:</b> {job['department']} &nbsp;|&nbsp; <b>Location:</b> {job['location']} &nbsp;|&nbsp; <b>CTC:</b> <span style='background:rgba(238,242,255,0.9); border:1px solid rgba(199,210,254,0.8); padding:3px 10px; border-radius:8px; font-weight:700; color:#1E40AF;'>₹ {job['salary_lpa']} LPA</span>
+                    </div>
+                    """, unsafe_allow_html=True)
                 with h_col2:
                     score = job['match_percentage']
                     badge_class = "badge-eligible" if job['is_eligible'] else "badge-ineligible"
                     st.markdown(f"<div style='text-align:right;'><span class='{badge_class}'>{job['eligibility_status']}</span></div>", unsafe_allow_html=True)
                     st.progress(score / 100.0)
-                    st.markdown(f"<div style='text-align:right; font-weight:700; color:#1E3A8A;'>{score}% Profile Match</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='text-align:right; font-weight:700; color:#1E3A8A; font-size:0.88rem;'>{score}% Profile Match</div>", unsafe_allow_html=True)
                 
                 # Skill badges
-                st.markdown("---")
+                st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
                 s_col1, s_col2 = st.columns(2)
                 with s_col1:
                     st.markdown("**✅ Matched Required Skills:**")
@@ -465,7 +998,7 @@ with tabs[1]:
                     
                 # Eligibility details
                 if not job['is_eligible']:
-                    st.markdown(f"<div style='color:#B91C1C; font-size:0.85rem; margin-top:6px;'>⚠️ <b>Eligibility Notice:</b> {' | '.join(job['eligibility_reasons'])}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='color:#B91C1C; font-size:0.85rem; margin-top:8px;'>⚠️ <b>Eligibility Notice:</b> {' | '.join(job['eligibility_reasons'])}</div>", unsafe_allow_html=True)
                 
                 with st.expander("📄 View Role Description"):
                     st.write(job['description'])
@@ -496,8 +1029,16 @@ with tabs[1]:
 # TAB 3: COMPANY & JOB OPENINGS DATABASE (DB)
 # -------------------------------------------------------------
 with tabs[2]:
-    st.markdown("<div class='main-title'>Company & Job Openings Database</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitle'>Manage and explore real-time company recruitment drives stored in the SQLite database.</div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="hero-header-container">
+        <div class="hero-badge">
+            <span class="badge-glow-dot"></span>
+            <span>SQLITE DATABASE EXPLORER • CAMPUS RECRUITMENT DRIVES</span>
+        </div>
+        <div class="main-title">Company & Job Openings Database</div>
+        <div class="subtitle">Manage and explore real-time company recruitment drives stored in the SQLite database with instant query filtering.</div>
+    </div>
+    """, unsafe_allow_html=True)
     
     df_all_jobs = get_all_jobs()
     
@@ -528,7 +1069,7 @@ with tabs[2]:
     # Form to insert a new job posting
     with st.expander("➕ Post New Company Job Drive (Recruiter / TPO Portal)", expanded=False):
         st.markdown("""
-        <div style='background-color:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:12px 16px; margin-bottom:12px; font-size:0.9rem; color:#475569;'>
+        <div style='background:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.9); border-radius:12px; padding:12px 16px; margin-bottom:12px; font-size:0.9rem; color:#475569;'>
             <b>Recruiter Portal:</b> Publish new campus placement drives directly to the database. All drives become immediately available for student recommendation and filtering.
         </div>
         """, unsafe_allow_html=True)
@@ -611,8 +1152,16 @@ with tabs[2]:
 # TAB 4: MODEL ANALYTICS & EXPLAINABLE AI
 # -------------------------------------------------------------
 with tabs[3]:
-    st.markdown("<div class='main-title'>Model Performance & Explainability</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitle'>Rigorous evaluation metrics, comparison across classifier benchmarks, and feature impact analysis.</div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="hero-header-container">
+        <div class="hero-badge">
+            <span class="badge-glow-dot"></span>
+            <span>MULTI-CLASSIFIER BENCHMARK • EXPLAINABLE AI</span>
+        </div>
+        <div class="main-title">Model Performance & Explainability</div>
+        <div class="subtitle">Rigorous evaluation metrics, comparison across classifier benchmarks, and feature impact analysis.</div>
+    </div>
+    """, unsafe_allow_html=True)
     
     bundle = predictor.bundle
     metrics = bundle["metrics"]
@@ -647,14 +1196,20 @@ with tabs[3]:
             df_comp = pd.DataFrame(comp_data)
             st.dataframe(df_comp.style.highlight_max(subset=["Accuracy", "F1 Score", "ROC-AUC"], color="#DCFCE7"), use_container_width=True)
             
-            # Bar chart of ROC-AUC vs Accuracy
+            # Bar chart of ROC-AUC vs Accuracy with transparent glass theme
             fig_comp = px.bar(
                 df_comp, x="Model", y=["Accuracy", "ROC-AUC", "F1 Score"],
                 barmode="group",
                 title="Classifier Metric Comparison",
                 color_discrete_sequence=["#3B82F6", "#10B981", "#8B5CF6"]
             )
-            fig_comp.update_layout(height=320, margin=dict(t=40, b=20, l=20, r=20))
+            fig_comp.update_layout(
+                height=320,
+                margin=dict(t=40, b=20, l=20, r=20),
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(family="Plus Jakarta Sans, sans-serif")
+            )
             st.plotly_chart(fig_comp, use_container_width=True)
             
     with c_right:
@@ -668,7 +1223,13 @@ with tabs[3]:
                 color="Importance",
                 color_continuous_scale="Blues"
             )
-            fig_imp.update_layout(height=380, margin=dict(t=40, b=20, l=20, r=20))
+            fig_imp.update_layout(
+                height=380,
+                margin=dict(t=40, b=20, l=20, r=20),
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(family="Plus Jakarta Sans, sans-serif")
+            )
             st.plotly_chart(fig_imp, use_container_width=True)
             
     # ROC Curve & Confusion Matrix
@@ -686,7 +1247,10 @@ with tabs[3]:
                 xaxis_title="False Positive Rate",
                 yaxis_title="True Positive Rate",
                 height=320,
-                margin=dict(t=30, b=30, l=30, r=30)
+                margin=dict(t=30, b=30, l=30, r=30),
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(family="Plus Jakarta Sans, sans-serif")
             )
             st.plotly_chart(fig_roc, use_container_width=True)
             
@@ -702,15 +1266,29 @@ with tabs[3]:
             text_auto=True,
             color_continuous_scale="Teal"
         )
-        fig_cm.update_layout(height=320, margin=dict(t=30, b=30, l=30, r=30))
+        fig_cm.update_layout(
+            height=320,
+            margin=dict(t=30, b=30, l=30, r=30),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(family="Plus Jakarta Sans, sans-serif")
+        )
         st.plotly_chart(fig_cm, use_container_width=True)
 
 # -------------------------------------------------------------
 # TAB 5: BATCH EVALUATION & TPO ADMIN
 # -------------------------------------------------------------
 with tabs[4]:
-    st.markdown("<div class='main-title'>College Batch Placement Evaluator</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitle'>Allows Training & Placement Officers (TPO) to assess an entire batch of graduating students simultaneously with branch-wise analytics and smart filters.</div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="hero-header-container">
+        <div class="hero-badge">
+            <span class="badge-glow-dot"></span>
+            <span>COHORT PLACEMENT INTELLIGENCE • TPO COMMAND CENTER</span>
+        </div>
+        <div class="main-title">College Batch Placement Evaluator</div>
+        <div class="subtitle">Allows Training & Placement Officers (TPO) to assess an entire batch of graduating students simultaneously with branch-wise analytics and smart filters.</div>
+    </div>
+    """, unsafe_allow_html=True)
     
     if "evaluated_batch_df" not in st.session_state:
         st.session_state["evaluated_batch_df"] = None
@@ -796,7 +1374,7 @@ with tabs[4]:
         avg_readiness = float(batch_df["Placement_Probability_%"].mean())
         
         st.markdown("---")
-        # Summary KPI Metric Row
+        # Summary KPI Metric Row with frosted glass styling
         s1, s2, s3, s4, s5 = st.columns(5)
         s1.metric("Total Batch Students", f"{total}")
         s2.metric("Predicted Placements", f"{placed_count}")
@@ -831,7 +1409,7 @@ with tabs[4]:
             })
         df_branch_stats = pd.DataFrame(branch_rows).sort_values("Placement Rate (%)", ascending=False)
         
-        # Dual-Chart Layout
+        # Dual-Chart Layout with transparent canvas
         ch1, ch2 = st.columns(2)
         with ch1:
             fig_branch_counts = px.bar(
@@ -847,6 +1425,9 @@ with tabs[4]:
             fig_branch_counts.update_layout(
                 height=340,
                 margin=dict(t=40, b=20, l=20, r=20),
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(family="Plus Jakarta Sans, sans-serif"),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
             st.plotly_chart(fig_branch_counts, use_container_width=True)
@@ -865,6 +1446,9 @@ with tabs[4]:
             fig_branch_rates.update_layout(
                 height=340,
                 margin=dict(t=40, b=20, l=20, r=20),
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(family="Plus Jakarta Sans, sans-serif"),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
             st.plotly_chart(fig_branch_rates, use_container_width=True)
@@ -886,7 +1470,13 @@ with tabs[4]:
                     title="Batch Readiness Probability Distribution",
                     color_discrete_map={"Placed": "#10B981", "Unplaced": "#EF4444"}
                 )
-                fig_batch.update_layout(height=260, margin=dict(t=30, b=20, l=20, r=20))
+                fig_batch.update_layout(
+                    height=260,
+                    margin=dict(t=30, b=20, l=20, r=20),
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    font=dict(family="Plus Jakarta Sans, sans-serif")
+                )
                 st.plotly_chart(fig_batch, use_container_width=True)
                 
         # ---------------------------------------------------------
