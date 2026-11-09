@@ -1,0 +1,7 @@
+model,version,test_auc,test_acc,test_f1
+Random Forest,baseline,0.9169,0.84,0.8868
+Random Forest,tuned,0.9187,0.8333,0.8824
+Gradient Boosting,baseline,0.9128,0.83,0.8789
+Gradient Boosting,tuned,0.9235,0.8483,0.8926
+Logistic Regression,baseline,0.9291,0.8517,0.8952
+Logistic Regression,tuned,0.9297,0.8467,0.8923

@@ -5,3 +5,10 @@ __pycache__/
 .vscode/
 .idea/
 *.swp
+
+# Virtual environments
+venv/
+.venv/
+env/
+# Environment variables and secrets
+.env
