@@ -51,9 +51,31 @@ def init_db():
         skills TEXT NOT NULL,
         placement_probability REAL,
         prediction_status TEXT,
+        certifications_count INTEGER DEFAULT 0,
+        github_repos INTEGER DEFAULT 0,
+        hackathons_count INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
+
+    # Check and migrate existing columns if table was created in earlier schema
+    cursor.execute("PRAGMA table_info(student_profiles)")
+    existing_cols = [row[1] for row in cursor.fetchall()]
+    if "certifications_count" not in existing_cols:
+        try:
+            cursor.execute("ALTER TABLE student_profiles ADD COLUMN certifications_count INTEGER DEFAULT 0")
+        except Exception:
+            pass
+    if "github_repos" not in existing_cols:
+        try:
+            cursor.execute("ALTER TABLE student_profiles ADD COLUMN github_repos INTEGER DEFAULT 0")
+        except Exception:
+            pass
+    if "hackathons_count" not in existing_cols:
+        try:
+            cursor.execute("ALTER TABLE student_profiles ADD COLUMN hackathons_count INTEGER DEFAULT 0")
+        except Exception:
+            pass
     
     # 3. Placement History / Benchmark Dataset Table
     cursor.execute("""
@@ -209,16 +231,17 @@ def get_all_jobs():
     conn.close()
     return df
 
-def save_student_profile(name, email, branch, cgpa, ssc, hsc, internships, projects, coding, soft, backlogs, skills, prob, status):
+def save_student_profile(name, email, branch, cgpa, ssc, hsc, internships, projects, coding, soft, backlogs, skills, prob, status, certifications=0, github_repos=0, hackathons=0):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
     INSERT INTO student_profiles (
         full_name, email, branch, cgpa, ssc_marks, hsc_marks,
         internships_count, projects_count, coding_rating, soft_skills_rating,
-        history_of_backlogs, skills, placement_probability, prediction_status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (name, email, branch, cgpa, ssc, hsc, internships, projects, coding, soft, backlogs, skills, prob, status))
+        history_of_backlogs, skills, placement_probability, prediction_status,
+        certifications_count, github_repos, hackathons_count
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (name, email, branch, cgpa, ssc, hsc, internships, projects, coding, soft, backlogs, skills, prob, status, certifications, github_repos, hackathons))
     conn.commit()
     profile_id = cursor.lastrowid
     conn.close()

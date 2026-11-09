@@ -205,6 +205,14 @@ class PlacementPredictor:
             recommendations.append("Academic Standing: Aim to elevate current semester GPA to cross the standard 7.0 / 7.5 cutoff for multinational company eligibility.")
         if profile.get("soft_skills_score", 0) < 7:
             recommendations.append("Communication & Interview Skills: Participate in mock HR interviews, group discussions, and technical articulation practice.")
+        if profile.get("certifications_count", 0) == 0:
+            recommendations.append("Industry Credentials: Earn 1-2 verified technical certifications (e.g., AWS Cloud Practitioner, Azure, or Oracle Java) to validate proficiency.")
+        if profile.get("github_repos", 0) < 2:
+            recommendations.append("GitHub Portfolio: Publish at least 3-5 clean public repositories with comprehensive READMEs, code documentation, and live demo links.")
+        if profile.get("hackathons_count", 0) == 0 and profile.get("projects", 0) < 3:
+            recommendations.append("Hackathon Participation: Compete in college or national hackathons (Unstop, Smart India Hackathon) to demonstrate rapid prototyping and team collaboration.")
+        elif profile.get("hackathons_count", 0) > 0:
+            recommendations.append(f"Competitive Recognition: Highlight your {int(profile.get('hackathons_count', 0))} hackathon achievement(s) prominently in your resume summary.")
         if not recommendations:
             recommendations.append("Outstanding Profile: Maintain your current GPA, practice system design and behavioral STAR interview questions!")
             

@@ -1,5 +1,7 @@
 import os
 import sys
+import re
+import time
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -14,6 +16,7 @@ if SRC_DIR not in sys.path:
 from database import init_db, insert_initial_jobs, get_all_jobs, save_student_profile, get_recent_profiles, get_connection
 from train_model import PlacementPredictor, FEATURE_COLUMNS
 from recommender import JobRecommender
+from report_generator import generate_student_pdf
 
 # Set page configuration
 st.set_page_config(
@@ -23,7 +26,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for modern design
+# Custom CSS for modern responsive design (Desktop & Tablet)
 st.markdown("""
 <style>
     .main-title {
@@ -46,6 +49,10 @@ st.markdown("""
         border: 1px solid #E2E8F0;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         margin-bottom: 1rem;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .card:hover {
+        box-shadow: 0 8px 12px -2px rgba(0, 0, 0, 0.08);
     }
     .badge-eligible {
         background-color: #DCFCE7;
@@ -54,6 +61,7 @@ st.markdown("""
         border-radius: 9999px;
         font-size: 0.8rem;
         font-weight: 600;
+        white-space: nowrap;
     }
     .badge-ineligible {
         background-color: #FEE2E2;
@@ -62,6 +70,7 @@ st.markdown("""
         border-radius: 9999px;
         font-size: 0.8rem;
         font-weight: 600;
+        white-space: nowrap;
     }
     .tag-matched {
         background-color: #D1FAE5;
@@ -89,6 +98,43 @@ st.markdown("""
         font-size: 0.78rem;
         display: inline-block;
         margin: 2px;
+    }
+    /* Responsive media queries for Desktop and Tablet */
+    @media screen and (max-width: 992px) {
+        .main-title {
+            font-size: 1.85rem !important;
+        }
+        .subtitle {
+            font-size: 0.95rem !important;
+            margin-bottom: 1rem !important;
+        }
+        .card {
+            padding: 14px 16px !important;
+            margin-bottom: 0.85rem !important;
+        }
+        div[data-testid="column"] {
+            min-width: 260px !important;
+            flex: 1 1 260px !important;
+        }
+    }
+    @media screen and (max-width: 768px) {
+        .main-title {
+            font-size: 1.5rem !important;
+        }
+        .subtitle {
+            font-size: 0.88rem !important;
+        }
+        .card {
+            padding: 12px 14px !important;
+        }
+        div[data-testid="column"] {
+            min-width: 100% !important;
+            flex: 1 1 100% !important;
+        }
+        .tag-matched, .tag-missing, .tag-pref {
+            font-size: 0.72rem !important;
+            padding: 2px 6px !important;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -132,7 +178,9 @@ if preset == "🌟 High Achiever (Software)":
     default_projects = 4
     default_coding = 88.0
     default_soft = 8.5
-    default_certifications = 2
+    default_certifications = 3
+    default_github = 12
+    default_hackathons = 2
     default_backlogs = 0
     default_skills = ["Python", "Java", "Data Structures", "Algorithms", "System Design", "SQL", "Docker", "Git"]
 elif preset == "🤖 Data Science Enthusiast":
@@ -145,6 +193,8 @@ elif preset == "🤖 Data Science Enthusiast":
     default_coding = 76.0
     default_soft = 7.5
     default_certifications = 3
+    default_github = 8
+    default_hackathons = 1
     default_backlogs = 0
     default_skills = ["Python", "Machine Learning", "Pandas", "Scikit-Learn", "SQL", "Statistics", "Data Structures"]
 elif preset == "⚠️ Student Needing Guidance":
@@ -157,6 +207,8 @@ elif preset == "⚠️ Student Needing Guidance":
     default_coding = 42.0
     default_soft = 5.0
     default_certifications = 0
+    default_github = 1
+    default_hackathons = 0
     default_backlogs = 2
     default_skills = ["C++", "HTML5", "CSS3"]
 else:
@@ -169,6 +221,8 @@ else:
     default_coding = 68.0
     default_soft = 7.0
     default_certifications = 1
+    default_github = 5
+    default_hackathons = 1
     default_backlogs = 0
     default_skills = ["Java", "Python", "SQL", "Data Structures", "Git"]
 
@@ -208,7 +262,14 @@ with tabs[0]:
                 projects = st.number_input("Major / Minor Projects", min_value=0, max_value=8, value=int(default_projects))
                 soft_skills = st.slider("Soft Skills & Interview Rating (1 - 10)", min_value=1.0, max_value=10.0, value=float(default_soft), step=0.5)
             
-            certifications = st.number_input("Technical Certifications", min_value=0, max_value=6, value=int(default_certifications))
+            st.markdown("##### 🏆 Portfolio & Extracurricular Excellence")
+            p_col1, p_col2, p_col3 = st.columns(3)
+            with p_col1:
+                certifications = st.slider("📜 Technical Certifications", min_value=0, max_value=10, value=int(default_certifications), step=1, help="Industry certifications (AWS, Azure, GCP, Oracle Java, etc.)")
+            with p_col2:
+                github_repos = st.slider("🐙 GitHub Repositories", min_value=0, max_value=30, value=int(default_github), step=1, help="Public GitHub repositories showcasing project code and commit history")
+            with p_col3:
+                hackathons = st.slider("🥇 Hackathon Wins / Podiums", min_value=0, max_value=8, value=int(default_hackathons), step=1, help="Hackathon victories, finalist ranks, or podium finishes")
             
             skills_selected = st.multiselect(
                 "Technical Skills & Tooling",
@@ -228,6 +289,8 @@ with tabs[0]:
         "coding_score": coding_score,
         "soft_skills_score": soft_skills,
         "certifications_count": certifications,
+        "github_repos": github_repos,
+        "hackathons_count": hackathons,
         "backlogs": backlogs
     }
     
@@ -235,6 +298,24 @@ with tabs[0]:
     prob = result["placement_probability"]
     prob_percent = prob * 100
     status = result["status"]
+    
+    # Compute candidate recommended jobs for PDF report and recommendations
+    candidate_recommended_jobs = recommender.recommend_jobs(
+        student_skills=skills_selected,
+        student_cgpa=cgpa,
+        student_backlogs=backlogs,
+        top_n=5
+    )
+    
+    # Generate downloadable PDF report
+    pdf_report_bytes = generate_student_pdf(
+        student_name=name,
+        branch=branch,
+        profile_data=profile_data,
+        skills_selected=skills_selected,
+        prediction_result=result,
+        recommended_jobs=candidate_recommended_jobs
+    )
     
     with col2:
         st.markdown("#### 🎯 Placement Prediction Output")
@@ -246,7 +327,7 @@ with tabs[0]:
             mode="gauge+number",
             value=prob_percent,
             domain={'x': [0, 1], 'y': [0, 1]},
-            title={'text': "Placement Probability", 'font': {'size': 20, 'color': '#1E293B'}},
+            title={'text': "Placement Readiness Score", 'font': {'size': 20, 'color': '#1E293B'}},
             number={'suffix': "%", 'font': {'size': 38, 'color': gauge_color}},
             gauge={
                 'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "#94A3B8"},
@@ -271,7 +352,7 @@ with tabs[0]:
         
         # Status Box
         if prob >= 0.75:
-            st.success(f"**Status: {status}**\n\nThe candidate meets high placement probability benchmarks across academics and technical evaluation.")
+            st.success(f"**Status: {status}**\n\nThe candidate meets high placement probability benchmarks across academics, technical, and portfolio evaluation.")
         elif prob >= 0.45:
             st.warning(f"**Status: {status}**\n\nThe candidate has competitive baseline metrics but needs strengthening in key evaluated parameters.")
         else:
@@ -282,13 +363,28 @@ with tabs[0]:
         for rec in result["recommendations"]:
             st.markdown(f"- {rec}")
             
+        # Downloadable PDF Report Button
+        st.markdown("---")
+        st.markdown("##### 📄 Export Student Placement Report")
+        st.download_button(
+            label="📥 Download Placement Readiness & Job Report (PDF)",
+            data=pdf_report_bytes,
+            file_name=f"{name.replace(' ', '_')}_Placement_Readiness_Report.pdf",
+            mime="application/pdf",
+            use_container_width=True,
+            help="Download formal PDF report with placement readiness score, competency metrics, AI guidance, and matching jobs."
+        )
+            
         # Save to DB option
         if submit_btn:
             skills_str = ", ".join(skills_selected)
             saved_id = save_student_profile(
                 name, f"{name.lower().replace(' ', '')}@college.edu", branch,
                 cgpa, ssc, hsc, internships, projects, int(coding_score),
-                int(soft_skills), backlogs, skills_str, round(prob, 4), status
+                int(soft_skills), backlogs, skills_str, round(prob, 4), status,
+                certifications=int(certifications),
+                github_repos=int(github_repos),
+                hackathons=int(hackathons)
             )
             st.toast(f"✅ Assessment saved to database (Profile ID: {saved_id})")
 
@@ -377,6 +473,25 @@ with tabs[1]:
                     
                 st.markdown("</div>", unsafe_allow_html=True)
 
+        # Downloadable PDF report in Tab 2
+        st.markdown("---")
+        t2_pdf_bytes = generate_student_pdf(
+            student_name=name,
+            branch=branch,
+            profile_data=profile_data,
+            skills_selected=rec_skills,
+            prediction_result=result,
+            recommended_jobs=recommended_jobs
+        )
+        st.download_button(
+            label="📥 Download Full Student Placement & Job Recommendation Report (PDF)",
+            data=t2_pdf_bytes,
+            file_name=f"{name.replace(' ', '_')}_Job_Recommendations_Report.pdf",
+            mime="application/pdf",
+            key="download_tab2_pdf",
+            help="Download formal PDF report with complete skill gap analysis and recommended job matches."
+        )
+
 # -------------------------------------------------------------
 # TAB 3: COMPANY & JOB OPENINGS DATABASE (DB)
 # -------------------------------------------------------------
@@ -411,39 +526,86 @@ with tabs[2]:
     )
     
     # Form to insert a new job posting
-    with st.expander("➕ Post New Company Job Drive (Recruiter / TPO Portal)"):
+    with st.expander("➕ Post New Company Job Drive (Recruiter / TPO Portal)", expanded=False):
+        st.markdown("""
+        <div style='background-color:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:12px 16px; margin-bottom:12px; font-size:0.9rem; color:#475569;'>
+            <b>Recruiter Portal:</b> Publish new campus placement drives directly to the database. All drives become immediately available for student recommendation and filtering.
+        </div>
+        """, unsafe_allow_html=True)
         with st.form("new_job_form"):
             c1, c2 = st.columns(2)
             with c1:
-                new_company = st.text_input("Company Name", placeholder="e.g. Adobe")
-                new_role = st.text_input("Role Title", placeholder="e.g. Member of Technical Staff")
-                new_dept = st.selectbox("Department", ["Software Engineering", "Artificial Intelligence", "Cloud / Backend", "FinTech", "Security & Risk", "IT Services", "Analytics & Growth"])
-                new_salary = st.number_input("CTC Package (LPA)", min_value=3.0, max_value=60.0, value=18.0, step=0.5)
+                new_company = st.text_input("Company Name *", placeholder="e.g. Adobe", help="Official legal or recruiting entity name")
+                new_role = st.text_input("Role Title *", placeholder="e.g. Member of Technical Staff", help="Job designation / position title")
+                new_dept = st.selectbox("Department / Domain *", ["Software Engineering", "Artificial Intelligence", "Cloud / Backend", "FinTech", "Security & Risk", "IT Services", "Analytics & Growth"])
+                new_salary = st.number_input("CTC Package (LPA) *", min_value=1.0, max_value=120.0, value=18.0, step=0.5, help="Annual cost-to-company in Lakhs Per Annum")
             with c2:
-                new_min_cgpa = st.slider("Minimum CGPA Cutoff", 5.0, 9.5, 7.5, 0.1)
-                new_max_backlogs = st.number_input("Max Backlogs Allowed", 0, 5, 0)
+                new_min_cgpa = st.slider("Minimum CGPA Cutoff", 5.0, 10.0, 7.5, 0.1, help="Academic cutoff required for initial screening")
+                new_max_backlogs = st.number_input("Max Active Backlogs Allowed", min_value=0, max_value=10, value=0, help="Maximum number of unresolved arrears allowed")
                 new_location = st.text_input("Job Location", value="Bengaluru / Remote")
-                new_req_skills = st.text_input("Required Skills (comma-separated)", placeholder="Python, Data Structures, Algorithms, Docker")
+                new_req_skills = st.text_input("Required Skills (comma-separated) *", placeholder="Python, Data Structures, Algorithms, Docker")
                 new_pref_skills = st.text_input("Preferred Skills (comma-separated)", placeholder="AWS, Microservices, Kubernetes")
-                new_desc = st.text_area("Role Description", placeholder="Brief description of the responsibilities...")
+                new_desc = st.text_area("Role Description", placeholder="Brief description of key responsibilities and expectations...", height=80)
                 
-            post_submit = st.form_submit_button("Publish Job Drive to Database")
+            post_submit = st.form_submit_button("🚀 Publish Job Drive to Database", use_container_width=True)
+            
             if post_submit:
-                if new_company and new_role and new_req_skills:
-                    conn = get_connection()
-                    cursor = conn.cursor()
-                    cursor.execute("""
-                    INSERT INTO jobs (
-                        company_name, role_title, department, min_cgpa, max_backlogs,
-                        required_skills, preferred_skills, salary_lpa, location, description
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (new_company, new_role, new_dept, new_min_cgpa, new_max_backlogs, new_req_skills, new_pref_skills or "", new_salary, new_location, new_desc))
-                    conn.commit()
-                    conn.close()
-                    st.success(f"🎉 Job Drive for {new_company} ({new_role}) published successfully! Refreshing database.")
-                    st.rerun()
+                validation_errors = []
+                clean_company = new_company.strip()
+                clean_role = new_role.strip()
+                clean_location = new_location.strip() or "Bengaluru / Remote"
+                clean_req_skills = new_req_skills.strip()
+                clean_pref_skills = new_pref_skills.strip() if new_pref_skills else ""
+                clean_desc = new_desc.strip() if new_desc else f"Campus recruitment opportunity with {clean_company} for {clean_role}."
+                
+                # Client-side field validations
+                if not clean_company:
+                    validation_errors.append("Company Name is required.")
+                elif len(clean_company) < 2:
+                    validation_errors.append("Company Name must be at least 2 characters.")
+                    
+                if not clean_role:
+                    validation_errors.append("Role Title is required.")
+                elif len(clean_role) < 2:
+                    validation_errors.append("Role Title must be at least 2 characters.")
+                    
+                if not clean_req_skills:
+                    validation_errors.append("At least one Required Skill must be specified.")
                 else:
-                    st.error("Please fill in Company Name, Role Title, and Required Skills.")
+                    parsed_skills = [s.strip() for s in re.split(r'[,|;/]+', clean_req_skills) if s.strip()]
+                    if not parsed_skills:
+                        validation_errors.append("Please enter valid comma-separated Required Skills.")
+                        
+                if new_salary <= 0:
+                    validation_errors.append("CTC Package must be greater than 0 LPA.")
+                    
+                if new_min_cgpa < 5.0 or new_min_cgpa > 10.0:
+                    validation_errors.append("Minimum CGPA Cutoff must be between 5.0 and 10.0.")
+                    
+                if validation_errors:
+                    for err in validation_errors:
+                        st.toast(f"⚠️ {err}", icon="❌")
+                    st.error("### ⚠️ Validation Issues:\n" + "\n".join([f"- {err}" for err in validation_errors]))
+                else:
+                    try:
+                        conn = get_connection()
+                        cursor = conn.cursor()
+                        cursor.execute("""
+                        INSERT INTO jobs (
+                            company_name, role_title, department, min_cgpa, max_backlogs,
+                            required_skills, preferred_skills, salary_lpa, location, description
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (clean_company, clean_role, new_dept, float(new_min_cgpa), int(new_max_backlogs), clean_req_skills, clean_pref_skills, float(new_salary), clean_location, clean_desc))
+                        conn.commit()
+                        conn.close()
+                        
+                        st.toast(f"🎉 Job Drive for {clean_company} ({clean_role}) published successfully!", icon="✅")
+                        st.success(f"🎉 **{clean_company} - {clean_role}** drive published successfully! Refreshing database...")
+                        time.sleep(1)
+                        st.rerun()
+                    except Exception as e:
+                        st.toast(f"Database error: {e}", icon="🚨")
+                        st.error(f"Failed to publish job drive: {e}")
 
 # -------------------------------------------------------------
 # TAB 4: MODEL ANALYTICS & EXPLAINABLE AI
@@ -548,80 +710,255 @@ with tabs[3]:
 # -------------------------------------------------------------
 with tabs[4]:
     st.markdown("<div class='main-title'>College Batch Placement Evaluator</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitle'>Allows placement officers (TPO) to assess an entire batch of graduating students simultaneously.</div>", unsafe_allow_html=True)
+    st.markdown("<div class='subtitle'>Allows Training & Placement Officers (TPO) to assess an entire batch of graduating students simultaneously with branch-wise analytics and smart filters.</div>", unsafe_allow_html=True)
     
+    if "evaluated_batch_df" not in st.session_state:
+        st.session_state["evaluated_batch_df"] = None
+        
     b_col1, b_col2 = st.columns([1, 1])
     with b_col1:
         st.markdown("##### 📥 Upload Student CSV")
-        uploaded_file = st.file_uploader("Upload CSV formatted with student metrics", type=["csv"])
+        uploaded_file = st.file_uploader("Upload CSV formatted with student metrics", type=["csv"], key="tpo_csv_uploader")
         
     with b_col2:
         st.markdown("##### ⚡ Quick Demonstration")
-        generate_demo = st.button("🎲 Generate & Evaluate Random Batch (30 Students)")
+        generate_demo = st.button("🎲 Generate & Evaluate Random Batch (40 Students)", use_container_width=True)
         
-    batch_df = None
     if uploaded_file is not None:
         try:
-            batch_df = pd.read_csv(uploaded_file)
-            st.success(f"Uploaded CSV with {len(batch_df)} student rows.")
+            raw_batch_df = pd.read_csv(uploaded_file)
+            st.toast(f"📥 Uploaded CSV with {len(raw_batch_df)} student rows", icon="ℹ️")
+            
+            # Check required columns
+            missing_cols = [c for c in FEATURE_COLUMNS if c not in raw_batch_df.columns]
+            if missing_cols:
+                st.error(f"Missing required columns in CSV: {missing_cols}")
+            else:
+                with st.spinner("Evaluating batch with ML placement engine..."):
+                    if "student_name" not in raw_batch_df.columns:
+                        raw_batch_df.insert(0, "student_name", [f"Student_{i+101}" for i in range(len(raw_batch_df))])
+                    if "branch" not in raw_batch_df.columns:
+                        if "department" in raw_batch_df.columns:
+                            raw_batch_df["branch"] = raw_batch_df["department"]
+                        else:
+                            dept_pool = ["Computer Science (CSE)", "Information Technology (IT)", "Electronics & Comm (ECE)", "AI & Data Science (AIDS)", "Mechanical Engg"]
+                            raw_batch_df.insert(1, "branch", [dept_pool[i % len(dept_pool)] for i in range(len(raw_batch_df))])
+                            
+                    probs = []
+                    preds = []
+                    statuses = []
+                    for _, row in raw_batch_df.iterrows():
+                        res = predictor.predict(row.to_dict())
+                        probs.append(round(res["placement_probability"] * 100, 2))
+                        preds.append(res["prediction"])
+                        statuses.append(res["status"])
+                        
+                    raw_batch_df["Placement_Probability_%"] = probs
+                    raw_batch_df["Predicted_Outcome"] = ["Placed" if p == 1 else "Unplaced" for p in preds]
+                    raw_batch_df["Risk_Category"] = statuses
+                    st.session_state["evaluated_batch_df"] = raw_batch_df
+                    st.toast("✅ Batch evaluated successfully!", icon="🎓")
         except Exception as e:
-            st.error(f"Error reading CSV: {e}")
+            st.error(f"Error reading or processing CSV: {e}")
+            
     elif generate_demo:
         from generate_dataset import generate_placement_dataset
-        batch_df = generate_placement_dataset(num_samples=30, random_state=int(np.random.randint(1, 9999)))
-        # Add random student names
-        names = [f"Student_{i+101}" for i in range(len(batch_df))]
-        batch_df.insert(0, "student_name", names)
+        raw_batch_df = generate_placement_dataset(num_samples=40, random_state=int(np.random.randint(1, 9999)))
+        raw_batch_df.insert(0, "student_name", [f"Student_{i+101}" for i in range(len(raw_batch_df))])
         
+        dept_pool = ["Computer Science (CSE)", "Information Technology (IT)", "Electronics & Comm (ECE)", "AI & Data Science (AIDS)", "Mechanical Engg"]
+        raw_batch_df.insert(1, "branch", np.random.choice(dept_pool, size=len(raw_batch_df), p=[0.35, 0.25, 0.20, 0.12, 0.08]))
+        
+        with st.spinner("Evaluating 40 demo candidates across branches..."):
+            probs = []
+            preds = []
+            statuses = []
+            for _, row in raw_batch_df.iterrows():
+                res = predictor.predict(row.to_dict())
+                probs.append(round(res["placement_probability"] * 100, 2))
+                preds.append(res["prediction"])
+                statuses.append(res["status"])
+                
+            raw_batch_df["Placement_Probability_%"] = probs
+            raw_batch_df["Predicted_Outcome"] = ["Placed" if p == 1 else "Unplaced" for p in preds]
+            raw_batch_df["Risk_Category"] = statuses
+            st.session_state["evaluated_batch_df"] = raw_batch_df
+            st.toast("✅ Generated and evaluated 40 student cohort across 5 branches!", icon="🎲")
+            
+    batch_df = st.session_state.get("evaluated_batch_df")
+    
     if batch_df is not None:
-        # Check required columns
-        missing_cols = [c for c in FEATURE_COLUMNS if c not in batch_df.columns]
-        if missing_cols:
-            st.error(f"Missing required columns in CSV: {missing_cols}")
-        else:
-            with st.spinner("Evaluating entire batch with ML placement engine..."):
-                probs = []
-                preds = []
-                statuses = []
-                
-                for _, row in batch_df.iterrows():
-                    res = predictor.predict(row.to_dict())
-                    probs.append(round(res["placement_probability"] * 100, 2))
-                    preds.append(res["prediction"])
-                    statuses.append(res["status"])
-                    
-                batch_df["Placement_Probability_%"] = probs
-                batch_df["Predicted_Outcome"] = ["Placed" if p == 1 else "Unplaced" for p in preds]
-                batch_df["Risk_Category"] = statuses
-                
-            # Summary Metrics
-            placed_count = sum(preds)
-            total = len(batch_df)
-            rate = (placed_count / total) * 100
-            
-            s1, s2, s3, s4 = st.columns(4)
-            s1.metric("Total Batch Students", total)
-            s2.metric("Predicted Placements", placed_count)
-            s3.metric("Placement Rate", f"{rate:.1f}%")
-            s4.metric("At-Risk Students", total - placed_count)
-            
-            # Distribution plot
-            fig_batch = px.histogram(
-                batch_df, x="Placement_Probability_%", nbins=10,
-                color="Predicted_Outcome",
-                title="Batch Placement Probability Distribution",
-                color_discrete_map={"Placed": "#10B981", "Unplaced": "#EF4444"}
+        total = len(batch_df)
+        placed_count = int((batch_df["Predicted_Outcome"] == "Placed").sum())
+        unplaced_count = total - placed_count
+        rate = (placed_count / total) * 100 if total > 0 else 0
+        avg_cgpa = float(batch_df["cgpa"].mean())
+        avg_readiness = float(batch_df["Placement_Probability_%"].mean())
+        
+        st.markdown("---")
+        # Summary KPI Metric Row
+        s1, s2, s3, s4, s5 = st.columns(5)
+        s1.metric("Total Batch Students", f"{total}")
+        s2.metric("Predicted Placements", f"{placed_count}")
+        s3.metric("Placement Rate", f"{rate:.1f}%")
+        s4.metric("At-Risk Students", f"{unplaced_count}")
+        s5.metric("Avg Readiness Score", f"{avg_readiness:.1f}%")
+        
+        # ---------------------------------------------------------
+        # INTERACTIVE TPO SUMMARY CHARTS: BRANCH-WISE BREAKDOWN
+        # ---------------------------------------------------------
+        st.markdown("#### 🏛️ College TPO Analytics: Branch-Wise Readiness Breakdown")
+        
+        # Compute branch-wise metrics
+        branch_rows = []
+        for b_name, grp in batch_df.groupby("branch"):
+            b_total = len(grp)
+            b_placed = int((grp["Predicted_Outcome"] == "Placed").sum())
+            b_unplaced = b_total - b_placed
+            b_rate = round((b_placed / b_total) * 100, 1) if b_total > 0 else 0
+            b_avg_readiness = round(grp["Placement_Probability_%"].mean(), 1)
+            b_avg_cgpa = round(grp["cgpa"].mean(), 2)
+            b_avg_coding = round(grp["coding_score"].mean(), 1)
+            branch_rows.append({
+                "Branch": b_name,
+                "Total Students": b_total,
+                "Placed": b_placed,
+                "Unplaced": b_unplaced,
+                "Placement Rate (%)": b_rate,
+                "Avg Readiness (%)": b_avg_readiness,
+                "Avg CGPA": b_avg_cgpa,
+                "Avg Coding Score": b_avg_coding
+            })
+        df_branch_stats = pd.DataFrame(branch_rows).sort_values("Placement Rate (%)", ascending=False)
+        
+        # Dual-Chart Layout
+        ch1, ch2 = st.columns(2)
+        with ch1:
+            fig_branch_counts = px.bar(
+                df_branch_stats,
+                x="Branch",
+                y=["Placed", "Unplaced"],
+                barmode="group",
+                title="Branch-Wise Placement Counts (Placed vs Unplaced)",
+                labels={"value": "Number of Students", "variable": "Outcome"},
+                color_discrete_map={"Placed": "#10B981", "Unplaced": "#EF4444"},
+                text_auto=True
             )
-            fig_batch.update_layout(height=280)
-            st.plotly_chart(fig_batch, use_container_width=True)
+            fig_branch_counts.update_layout(
+                height=340,
+                margin=dict(t=40, b=20, l=20, r=20),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+            )
+            st.plotly_chart(fig_branch_counts, use_container_width=True)
             
-            st.dataframe(batch_df, use_container_width=True)
+        with ch2:
+            fig_branch_rates = px.bar(
+                df_branch_stats,
+                x="Branch",
+                y=["Placement Rate (%)", "Avg Readiness (%)"],
+                barmode="group",
+                title="Branch Placement Rate vs Avg Readiness Score",
+                labels={"value": "Percentage (%)", "variable": "Metric"},
+                color_discrete_map={"Placement Rate (%)": "#2563EB", "Avg Readiness (%)": "#8B5CF6"},
+                text_auto='.1f'
+            )
+            fig_branch_rates.update_layout(
+                height=340,
+                margin=dict(t=40, b=20, l=20, r=20),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+            )
+            st.plotly_chart(fig_branch_rates, use_container_width=True)
             
-            # Download CSV
-            csv_export = batch_df.to_csv(index=False).encode('utf-8')
+        with st.expander("📊 View Detailed Branch-Wise Metric Table & Probability Distribution"):
+            sub_col1, sub_col2 = st.columns([1.3, 1.0])
+            with sub_col1:
+                st.markdown("##### 📋 Branch Benchmarking Matrix")
+                st.dataframe(
+                    df_branch_stats.style.highlight_max(subset=["Placement Rate (%)", "Avg Readiness (%)", "Avg CGPA"], color="#DCFCE7")
+                                         .highlight_min(subset=["Unplaced"], color="#FEE2E2"),
+                    use_container_width=True,
+                    hide_index=True
+                )
+            with sub_col2:
+                fig_batch = px.histogram(
+                    batch_df, x="Placement_Probability_%", nbins=10,
+                    color="Predicted_Outcome",
+                    title="Batch Readiness Probability Distribution",
+                    color_discrete_map={"Placed": "#10B981", "Unplaced": "#EF4444"}
+                )
+                fig_batch.update_layout(height=260, margin=dict(t=30, b=20, l=20, r=20))
+                st.plotly_chart(fig_batch, use_container_width=True)
+                
+        # ---------------------------------------------------------
+        # TPO BATCH CANDIDATE FILTERING CONTROLS
+        # ---------------------------------------------------------
+        st.markdown("---")
+        st.markdown("#### 🔍 Filter Batch Candidate Records")
+        
+        f1, f2, f3 = st.columns([1.3, 1.4, 1.3])
+        
+        # 1. Department Filter
+        dept_options = ["All Departments"] + sorted(list(batch_df["branch"].dropna().unique()))
+        selected_dept = f1.selectbox("Filter by Department / Branch", dept_options, key="tpo_filter_dept")
+        
+        # 2. CGPA Range Filter
+        min_cgpa_bound = float(np.floor(batch_df["cgpa"].min() * 10) / 10)
+        max_cgpa_bound = float(np.ceil(batch_df["cgpa"].max() * 10) / 10)
+        selected_cgpa_range = f2.slider(
+            "Filter by CGPA Range",
+            min_value=max(4.0, min_cgpa_bound),
+            max_value=min(10.0, max_cgpa_bound),
+            value=(max(4.0, min_cgpa_bound), min(10.0, max_cgpa_bound)),
+            step=0.1,
+            key="tpo_filter_cgpa"
+        )
+        
+        # 3. Status Filter
+        status_options = ["All Outcomes", "Placed Only", "Unplaced Only", "At-Risk Only (< 45%)", "High Probability (>= 75%)"]
+        selected_status = f3.selectbox("Filter by Placed / Risk Status", status_options, key="tpo_filter_status")
+        
+        # Apply Filters
+        filtered_batch = batch_df.copy()
+        
+        if selected_dept != "All Departments":
+            filtered_batch = filtered_batch[filtered_batch["branch"] == selected_dept]
+            
+        filtered_batch = filtered_batch[
+            (filtered_batch["cgpa"] >= selected_cgpa_range[0]) &
+            (filtered_batch["cgpa"] <= selected_cgpa_range[1])
+        ]
+        
+        if selected_status == "Placed Only":
+            filtered_batch = filtered_batch[filtered_batch["Predicted_Outcome"] == "Placed"]
+        elif selected_status == "Unplaced Only":
+            filtered_batch = filtered_batch[filtered_batch["Predicted_Outcome"] == "Unplaced"]
+        elif selected_status == "At-Risk Only (< 45%)":
+            filtered_batch = filtered_batch[filtered_batch["Placement_Probability_%"] < 45.0]
+        elif selected_status == "High Probability (>= 75%)":
+            filtered_batch = filtered_batch[filtered_batch["Placement_Probability_%"] >= 75.0]
+            
+        st.caption(f"Displaying **{len(filtered_batch)}** of **{len(batch_df)}** students matching active filters.")
+        
+        # Display Table
+        st.dataframe(filtered_batch, use_container_width=True, hide_index=True)
+        
+        # Dual CSV Downloads
+        d1, d2 = st.columns(2)
+        with d1:
+            filtered_csv = filtered_batch.to_csv(index=False).encode('utf-8')
             st.download_button(
-                label="📥 Download Evaluated Batch Report (CSV)",
-                data=csv_export,
-                file_name="evaluated_batch_placement_report.csv",
-                mime="text/csv"
+                label=f"📥 Download Filtered Cohort Report ({len(filtered_batch)} Students CSV)",
+                data=filtered_csv,
+                file_name="tpo_filtered_batch_report.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+        with d2:
+            full_csv = batch_df.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label=f"📥 Download Complete Evaluated Batch Report ({len(batch_df)} Students CSV)",
+                data=full_csv,
+                file_name="tpo_full_evaluated_batch_report.csv",
+                mime="text/csv",
+                use_container_width=True
             )
