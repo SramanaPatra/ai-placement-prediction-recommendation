@@ -77,27 +77,51 @@ st.markdown(
     '<div class="bg-chip chip-10">🎯 93% ROC-AUC</div>'
     '<div class="bg-chip chip-11">💼 Tier-1 Offers</div>'
     '<div class="bg-chip chip-12">☁️ Cloud &amp; AI</div>'
+    '<div class="scroll-gradient-veil"></div>'
     '<div class="grid-shimmer"></div>'
     '</div>',
     unsafe_allow_html=True,
 )
 st.markdown("""<style>
 /* ============================================================
-   Calm Aurora Hue-Shift & Mesh Glassmorphism Theme
-   Palette: Ice Blue · Pale Lavender · Warm Pearl · Soft Mint
+   Scroll-Reactive Multi-Stop Aurora & Neural Glassmorphism Theme
    ============================================================ */
-/* ---- Layer 1: Aurora Gradient Canvas (Pale Lavender & Warm Pearl Cycle) ---- */
+:root {
+    --bg-c1: #CFE4FF;
+    --bg-c2: #DDD6FE;
+    --bg-c3: #B8F5DB;
+    --bg-c4: #FFF1E6;
+    --bg-angle: -45deg;
+    --scroll-hue: 0deg;
+    --veil-x: 22%;
+    --veil-y: 24%;
+}
+/* ---- Layer 1: Enhanced Scroll-Reactive Aurora Gradient Canvas ---- */
 [data-testid="stAppViewContainer"],
 .stApp {
-    background: linear-gradient(-45deg, #DBEAFE, #EDE9FE, #FFF5EB, #D1FAE5, #FCE7F3, #E0E7FF) !important;
-    background-size: 400% 400% !important;
-    animation: auroraShift 22s ease-in-out infinite !important;
+    background: linear-gradient(var(--bg-angle), var(--bg-c1), var(--bg-c2), var(--bg-c3), var(--bg-c4), var(--bg-c2)) !important;
+    background-size: 380% 380% !important;
+    animation: auroraShift 20s ease-in-out infinite !important;
+    transition: background 0.35s ease;
     position: relative;
 }
 @keyframes auroraShift {
     0%   { background-position: 0% 50%; }
     50%  { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
+}
+/* ---- Scroll-Reactive Radial & Conic Veil ---- */
+.scroll-gradient-veil {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at var(--veil-x) var(--veil-y), rgba(99, 102, 241, 0.24) 0%, transparent 52%),
+        radial-gradient(circle at calc(100% - var(--veil-x)) calc(100% - var(--veil-y)), rgba(16, 185, 129, 0.24) 0%, transparent 55%),
+        conic-gradient(from var(--bg-angle) at 50% 50%, rgba(59, 130, 246, 0.08), rgba(167, 139, 250, 0.14), rgba(251, 191, 146, 0.12), rgba(16, 185, 129, 0.11), rgba(59, 130, 246, 0.08));
+    filter: hue-rotate(var(--scroll-hue));
+    pointer-events: none;
+    z-index: 0;
+    transition: filter 0.35s ease;
 }
 /* ---- Layer 2: Calm Floating Blurred Mesh Orbs + Scroll Parallax Wrappers ---- */
 .aurora-bg-layer {
@@ -112,7 +136,8 @@ st.markdown("""<style>
     inset: 0;
     pointer-events: none;
     will-change: transform;
-    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    filter: hue-rotate(var(--scroll-hue));
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), filter 0.35s ease;
 }
 .orb {
     position: absolute;
@@ -184,8 +209,8 @@ st.markdown("""<style>
     font-weight: 600;
     letter-spacing: 0.01em;
     color: rgba(30, 58, 138, 0.55);
-    background: rgba(255, 255, 255, 0.42);
-    border: 1px solid rgba(255, 255, 255, 0.65);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(219, 234, 254, 0.56), rgba(209, 250, 229, 0.54));
+    border: 1px solid rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     box-shadow: 0 4px 16px rgba(59, 130, 246, 0.12);
@@ -283,9 +308,10 @@ iframe[height="0"] {
 }
 /* ---- Animated Sidebar ("Student Profile Setup") ---- */
 [data-testid="stSidebar"] {
-    background: linear-gradient(-45deg, rgba(219, 234, 254, 0.88), rgba(237, 233, 254, 0.88), rgba(255, 245, 235, 0.88), rgba(209, 250, 229, 0.88)) !important;
+    background: linear-gradient(var(--bg-angle), var(--bg-c3), var(--bg-c1), var(--bg-c2), var(--bg-c4)) !important;
     background-size: 350% 350% !important;
     animation: auroraShift 20s ease-in-out infinite !important;
+    transition: background 0.35s ease;
     border-right: 1px solid rgba(255, 255, 255, 0.80);
     box-shadow: 4px 0 28px rgba(30, 58, 138, 0.10);
     overflow: hidden !important;
@@ -330,7 +356,7 @@ iframe[height="0"] {
     animation: orbFloat2 28s ease-in-out infinite;
 }
 [data-testid="stSidebar"] [data-baseweb="select"] > div {
-    background: rgba(255, 255, 255, 0.78) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.90), rgba(224, 242, 254, 0.80), rgba(237, 233, 254, 0.75)) !important;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.85) !important;
@@ -364,7 +390,7 @@ iframe[height="0"] {
 }
 /* ---- Frosted Glass Cards ---- */
 .card {
-    background: rgba(255, 255, 255, 0.84) !important;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.90), rgba(239, 246, 255, 0.80), rgba(236, 253, 245, 0.78)) !important;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.85);
@@ -378,19 +404,23 @@ iframe[height="0"] {
     transform: translateY(-2px);
     box-shadow: 0 12px 32px rgba(30, 58, 138, 0.14);
 }
-/* ---- Frosted Glass Forms, Metrics, Charts, Expanders & Bordered Cards ---- */
+/* ---- Frosted Glass Gradient Forms, Metrics, Charts, Expanders & Uploader ---- */
 [data-testid="stForm"],
 [data-testid="stMetric"],
 [data-testid="stPlotlyChart"],
 [data-testid="stVerticalBlockBorderWrapper"],
+[data-testid="stFileUploader"] section,
 div[data-testid="stExpander"] {
-    background: rgba(255, 255, 255, 0.84) !important;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.90), rgba(239, 246, 255, 0.80), rgba(236, 253, 245, 0.78)) !important;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.88) !important;
     border-radius: 16px !important;
     box-shadow: 0 8px 28px rgba(30, 58, 138, 0.08);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+[data-testid="stMetric"] {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(224, 242, 254, 0.80), rgba(237, 233, 254, 0.76)) !important;
 }
 [data-testid="stVerticalBlockBorderWrapper"] {
     animation: fadeSlideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -401,12 +431,100 @@ div[data-testid="stExpander"] {
 [data-testid="stPlotlyChart"] {
     padding: 8px;
 }
+div[data-testid="stExpander"] details,
+div[data-testid="stExpander"] summary {
+    background: transparent !important;
+}
 [data-testid="stForm"]:hover,
 [data-testid="stMetric"]:hover,
 [data-testid="stVerticalBlockBorderWrapper"]:hover,
+[data-testid="stFileUploader"] section:hover,
 div[data-testid="stExpander"]:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 32px rgba(30, 58, 138, 0.14);
+}
+button[kind="secondary"],
+[data-testid="stDownloadButton"] button {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(219, 234, 254, 0.82), rgba(209, 250, 229, 0.78)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.90) !important;
+    border-radius: 12px !important;
+    color: #1E3A8A !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 14px rgba(30, 58, 138, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+button[kind="secondary"]:hover,
+[data-testid="stDownloadButton"] button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.20);
+}
+/* ---- Job Role Cards with Background Company Logo Watermarks ---- */
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .role-bg-watermark) {
+    position: relative !important;
+    overflow: hidden !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.90), rgba(224, 242, 254, 0.76), rgba(236, 253, 245, 0.76)) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.88) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 28px rgba(30, 58, 138, 0.08);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    animation: fadeSlideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .role-bg-watermark):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(30, 58, 138, 0.14);
+}
+[data-testid="stElementContainer"]:has(.role-bg-watermark) {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 0 !important;
+    pointer-events: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+[data-testid="stElementContainer"]:has(.role-bg-watermark) > div,
+[data-testid="stElementContainer"]:has(.role-bg-watermark) [data-testid="stMarkdown"],
+[data-testid="stElementContainer"]:has(.role-bg-watermark) [data-testid="stMarkdownContainer"] {
+    width: 100% !important;
+    height: 100% !important;
+    position: static !important;
+}
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .role-bg-watermark) > *:not(:has(.role-bg-watermark)) {
+    position: relative;
+    z-index: 2;
+}
+.role-bg-watermark {
+    position: absolute;
+    right: 44px;
+    top: 50%;
+    width: 205px;
+    height: 205px;
+    opacity: 0.38;
+    filter: saturate(1.75) contrast(1.15) drop-shadow(0 14px 26px rgba(30, 58, 138, 0.25));
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
+    pointer-events: none;
+    transition: opacity 0.4s ease, filter 0.4s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: logoSpin3D 18s linear infinite;
+}
+@keyframes logoSpin3D {
+    0%   { transform: translateY(-50%) perspective(950px) rotateX(12deg) rotateY(0deg) rotateZ(-6deg) scale(1); }
+    25%  { transform: translateY(-52%) perspective(950px) rotateX(-8deg) rotateY(90deg) rotateZ(0deg) scale(1.04); }
+    50%  { transform: translateY(-50%) perspective(950px) rotateX(12deg) rotateY(180deg) rotateZ(6deg) scale(1.07); }
+    75%  { transform: translateY(-48%) perspective(950px) rotateX(-8deg) rotateY(270deg) rotateZ(0deg) scale(1.04); }
+    100% { transform: translateY(-50%) perspective(950px) rotateX(12deg) rotateY(360deg) rotateZ(-6deg) scale(1); }
+}
+.role-bg-watermark svg {
+    width: 100%;
+    height: 100%;
+}
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .role-bg-watermark):hover .role-bg-watermark {
+    opacity: 0.54;
+    filter: saturate(1.85) contrast(1.18) drop-shadow(0 18px 34px rgba(59, 130, 246, 0.36));
 }
 /* ---- Primary Submit Button Shimmer ---- */
 button[kind="primary"],
@@ -429,7 +547,7 @@ button[kind="primary"]:hover,
 /* ---- Sleek Glass Pill Tabs (Streamlit 1.65 React Aria + BaseWeb) ---- */
 [data-testid="stTabs"] [role="tablist"],
 [data-baseweb="tab-list"] {
-    background: rgba(255, 255, 255, 0.72) !important;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.88), rgba(224, 242, 254, 0.78), rgba(237, 233, 254, 0.78), rgba(209, 250, 229, 0.78)) !important;
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(255, 255, 255, 0.80) !important;
@@ -529,7 +647,7 @@ button[kind="primary"]:hover,
 }
 /* ---- Toast alerts clean over background ---- */
 [data-testid="stToast"] {
-    background: rgba(255, 255, 255, 0.92) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(224, 242, 254, 0.90), rgba(209, 250, 229, 0.88)) !important;
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(255, 255, 255, 0.70);
@@ -545,6 +663,8 @@ button[kind="primary"]:hover,
     height: 100%;
     pointer-events: none;
     z-index: 0;
+    filter: hue-rotate(var(--scroll-hue));
+    transition: filter 0.35s ease;
 }
 .wave-ribbon {
     fill: none;
@@ -601,10 +721,10 @@ button[kind="primary"]:hover,
 }
 /* ---- UI Helper Pills & Sidebar Status Card ---- */
 .sidebar-status-card {
-    background: rgba(255, 255, 255, 0.78);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.88), rgba(224, 242, 254, 0.78), rgba(237, 233, 254, 0.75));
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.90);
     border-radius: 14px;
     padding: 14px 16px;
     margin-top: 14px;
@@ -627,9 +747,9 @@ button[kind="primary"]:hover,
     margin-bottom: 12px;
 }
 .kpi-mini-pill {
-    background: rgba(255, 255, 255, 0.82);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(219, 234, 254, 0.78), rgba(209, 250, 229, 0.75));
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.90);
     border-radius: 12px;
     padding: 10px 8px;
     text-align: center;
@@ -657,20 +777,20 @@ button[kind="primary"]:hover,
     animation: fadeSlideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .risk-glow-high {
-    background: rgba(220, 252, 231, 0.78);
+    background: linear-gradient(135deg, rgba(220, 252, 231, 0.86), rgba(167, 243, 208, 0.68), rgba(209, 250, 229, 0.80));
     border: 1px solid rgba(16, 185, 129, 0.45);
     color: #065F46;
     box-shadow: 0 0 24px rgba(16, 185, 129, 0.22);
     animation: fadeSlideUp 0.55s ease both, pulseGreen 4s ease-in-out infinite;
 }
 .risk-glow-moderate {
-    background: rgba(254, 243, 199, 0.80);
+    background: linear-gradient(135deg, rgba(254, 243, 199, 0.86), rgba(253, 230, 138, 0.68), rgba(255, 247, 237, 0.82));
     border: 1px solid rgba(245, 158, 11, 0.45);
     color: #92400E;
     box-shadow: 0 0 22px rgba(245, 158, 11, 0.20);
 }
 .risk-glow-low {
-    background: rgba(254, 226, 226, 0.82);
+    background: linear-gradient(135deg, rgba(254, 226, 226, 0.88), rgba(254, 205, 211, 0.72), rgba(255, 241, 242, 0.82));
     border: 1px solid rgba(239, 68, 68, 0.45);
     color: #991B1B;
     box-shadow: 0 0 22px rgba(239, 68, 68, 0.22);
@@ -685,7 +805,7 @@ button[kind="primary"]:hover,
     50%      { box-shadow: 0 6px 28px rgba(239, 68, 68, 0.34); }
 }
 .rec-item {
-    background: rgba(255, 255, 255, 0.65);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(239, 246, 255, 0.78), rgba(237, 233, 254, 0.74));
     border-left: 3px solid #3B82F6;
     border-radius: 8px;
     padding: 8px 12px;
@@ -747,12 +867,13 @@ button[kind="primary"]:hover,
     .orb, .orb-wrap, .sidebar-orb, .sonar-ring, .flow-arc, .flow-arc-solid, .wave-ribbon,
     .geo-ring, .bg-chip, .grid-shimmer, .main-title, .risk-glow-high, .risk-glow-low,
     .rec-item, .job-card-anim, .match-bar-fill, .tag-matched, .tag-missing, .tag-pref,
-    button[kind="primary"], .stFormSubmitButton button {
+    .role-bg-watermark, button[kind="primary"], .stFormSubmitButton button {
         animation: none !important;
         opacity: 1 !important;
         transform: none !important;
     }
     .bg-chip { opacity: 0.35 !important; }
+    .role-bg-watermark { opacity: 0.30 !important; transform: translateY(-50%) rotate(-8deg) !important; }
     .grid-shimmer { opacity: 0.30; }
     * { transition: none !important; }
 }
@@ -782,15 +903,49 @@ components.html("""
     let dir = 1;
     let ticking = false;
 
-    function getScrollTop(target) {
-        if (target && typeof target.scrollTop === 'number' && target !== doc) {
-            return target.scrollTop;
-        }
+    function getScrollMetrics(target) {
         const main = doc.querySelector('[data-testid="stMain"]') || doc.querySelector('[data-testid="stAppViewContainer"]');
-        return (main ? main.scrollTop : 0) || parentWin.scrollY || doc.documentElement.scrollTop || 0;
+        const scroller = (target && typeof target.scrollTop === 'number' && target !== doc && target.scrollHeight > target.clientHeight) ? target : main;
+        const top = (scroller ? scroller.scrollTop : 0) || parentWin.scrollY || doc.documentElement.scrollTop || 0;
+        const maxRange = scroller ? Math.max(scroller.scrollHeight - scroller.clientHeight, 450) : 650;
+        return { top: top, maxRange: maxRange };
     }
 
-    function applyParallax(scrollY) {
+    // 4-stop RGB palettes that smoothly morph as the user scrolls
+    const scrollPalettes = [
+        [[207, 228, 255], [221, 214, 254], [184, 245, 219], [255, 241, 230]], // Top: Azure, Lavender, Mint, Pearl
+        [[186, 230, 253], [233, 213, 255], [165, 243, 252], [245, 208, 254]], // 33%: Electric Sky, Violet, Cyan, Orchid
+        [[167, 243, 208], [254, 215, 170], [251, 207, 232], [199, 210, 254]], // 66%: Emerald, Peach Pearl, Rose Quartz, Periwinkle
+        [[199, 210, 254], [254, 205, 211], [153, 246, 228], [253, 230, 138]]  // Bottom: Dusk Indigo, Coral Rose, Teal, Warm Gold
+    ];
+
+    function lerpRgb(cA, cB, t) {
+        const r = Math.round(cA[0] + (cB[0] - cA[0]) * t);
+        const g = Math.round(cA[1] + (cB[1] - cA[1]) * t);
+        const b = Math.round(cA[2] + (cB[2] - cA[2]) * t);
+        return 'rgb(' + r + ', ' + g + ', ' + b + ')';
+    }
+
+    function applyScrollColors(scrollY, maxRange) {
+        const progress = Math.max(0, Math.min(1, scrollY / Math.max(maxRange, 1)));
+        const scaled = progress * (scrollPalettes.length - 1);
+        const idx = Math.min(scrollPalettes.length - 2, Math.floor(scaled));
+        const localT = scaled - idx;
+        const pA = scrollPalettes[idx];
+        const pB = scrollPalettes[idx + 1];
+        const rootStyle = doc.documentElement.style;
+
+        rootStyle.setProperty('--bg-c1', lerpRgb(pA[0], pB[0], localT));
+        rootStyle.setProperty('--bg-c2', lerpRgb(pA[1], pB[1], localT));
+        rootStyle.setProperty('--bg-c3', lerpRgb(pA[2], pB[2], localT));
+        rootStyle.setProperty('--bg-c4', lerpRgb(pA[3], pB[3], localT));
+        rootStyle.setProperty('--bg-angle', (-45 + progress * 165).toFixed(1) + 'deg');
+        rootStyle.setProperty('--scroll-hue', (progress * 95).toFixed(1) + 'deg');
+        rootStyle.setProperty('--veil-x', (22 + progress * 56).toFixed(1) + '%');
+        rootStyle.setProperty('--veil-y', (24 + Math.sin(progress * Math.PI) * 44).toFixed(1) + '%');
+    }
+
+    function applyParallax(scrollY, maxRange) {
         factors.forEach(function(f) {
             const el = doc.querySelector(f.sel);
             if (!el) return;
@@ -798,23 +953,30 @@ components.html("""
             const dy = Math.max(-90, Math.min(90, scrollY * f.vy));
             el.style.transform = 'translate3d(' + dx.toFixed(1) + 'px, ' + dy.toFixed(1) + 'px, 0)';
         });
+        applyScrollColors(scrollY, maxRange);
     }
 
+    let lastMaxRange = 650;
     function onScroll(e) {
         if (reducedMotion) return;
-        const current = getScrollTop(e.target);
-        if (Math.abs(current - lastScroll) > 2) {
-            dir = current >= lastScroll ? 1 : -1;
-            lastScroll = current;
+        const metrics = getScrollMetrics(e.target);
+        lastMaxRange = metrics.maxRange;
+        if (Math.abs(metrics.top - lastScroll) > 2) {
+            dir = metrics.top >= lastScroll ? 1 : -1;
+            lastScroll = metrics.top;
         }
         if (!ticking) {
             ticking = true;
             parentWin.requestAnimationFrame(function() {
-                applyParallax(lastScroll);
+                applyParallax(lastScroll, lastMaxRange);
                 ticking = false;
             });
         }
     }
+
+    // Apply initial scroll palette on load
+    const initMetrics = getScrollMetrics(null);
+    applyScrollColors(initMetrics.top, initMetrics.maxRange);
 
     // 2. Ensure Sidebar animated layer exists inside [data-testid="stSidebar"]
     function ensureSidebarLayer() {
@@ -1172,6 +1334,43 @@ ALL_SKILLS = [
     "Computer Networks", "Cybersecurity", "Statistics", "Power BI", "Tableau", "Communication Skills"
 ]
 
+def get_company_logo_svg(company_name: str) -> str:
+    """Return a crisp inline SVG brand mark/monogram for company role card watermarks."""
+    name = (company_name or "").strip().lower()
+    if "google" in name:
+        return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M108 61.2c0-3.5-.3-6.9-.9-10.2H60v19.3h27c-1.2 6.2-4.7 11.5-10 15v12.5h16.2c9.5-8.7 14.8-21.6 14.8-36.6z" fill="#4285F4"/><path d="M60 110c13.5 0 24.8-4.5 33.1-12.1L76.9 85.4c-4.5 3-10.2 4.8-16.9 4.8-13 0-24-8.8-27.9-20.6H15.4v12.9C23.8 99.1 40.7 110 60 110z" fill="#34A853"/><path d="M32.1 69.6c-1-3-1.6-6.2-1.6-9.6s.6-6.6 1.6-9.6V37.5H15.4C11.9 44.3 10 51.9 10 60s1.9 15.7 5.4 22.5l16.7-12.9z" fill="#FBBC05"/><path d="M60 29.8c7.3 0 13.9 2.5 19.1 7.5l14.3-14.3C84.8 14.9 73.5 10 60 10 40.7 10 23.8 20.9 15.4 37.5l16.7 12.9C36 38.6 47 29.8 60 29.8z" fill="#EA4335"/></svg>'
+    if "microsoft" in name:
+        return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="14" y="14" width="42" height="42" rx="4" fill="#F25022"/><rect x="64" y="14" width="42" height="42" rx="4" fill="#7FBA00"/><rect x="14" y="64" width="42" height="42" rx="4" fill="#00A4EF"/><rect x="64" y="64" width="42" height="42" rx="4" fill="#FFB900"/></svg>'
+    if "amazon" in name:
+        return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><text x="60" y="68" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="68" fill="#1E293B">a</text><path d="M22 82 C44 98 76 98 98 80" fill="none" stroke="#FF9900" stroke-width="7" stroke-linecap="round"/><path d="M88 76 L101 79 L95 92" fill="none" stroke="#FF9900" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    if "tcs" in name:
+        return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="46" fill="none" stroke="#0076CE" stroke-width="6"/><path d="M26 70 Q60 22 94 70" fill="none" stroke="#E40046" stroke-width="6" stroke-linecap="round"/><text x="60" y="72" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="30" fill="#0076CE">TCS</text></svg>'
+    if "infosys" in name:
+        return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><polygon points="60,12 106,38 106,82 60,108 14,82 14,38" fill="none" stroke="#007CC3" stroke-width="7"/><text x="60" y="70" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="30" fill="#007CC3">Infy</text></svg>'
+    if "accenture" in name:
+        return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M28 24 L94 60 L28 96" fill="none" stroke="#A100FF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    if "deloitte" in name:
+        return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><text x="50" y="82" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="72" fill="#0F172A">D</text><circle cx="88" cy="76" r="11" fill="#86BC25"/></svg>'
+    if "goldman" in name:
+        return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="16" width="88" height="88" rx="14" fill="#5D87B8"/><text x="60" y="74" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="42" fill="#FFFFFF">GS</text></svg>'
+    if "morgan" in name or "chase" in name:
+        return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><polygon points="40,14 80,14 106,40 106,80 80,106 40,106 14,80 14,40" fill="none" stroke="#117ACA" stroke-width="12"/><rect x="44" y="44" width="32" height="32" rx="4" fill="#117ACA"/></svg>'
+    if "zomato" in name:
+        return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect x="14" y="14" width="92" height="92" rx="22" fill="#E23744"/><text x="60" y="80" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="64" fill="#FFFFFF">z</text></svg>'
+    if "swiggy" in name:
+        return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M60 12 C84 12 98 28 98 50 C98 74 60 108 60 108 C60 108 22 74 22 50 C22 28 36 12 60 12 Z" fill="#FC8019"/><text x="60" y="64" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="38" fill="#FFFFFF">S</text></svg>'
+    if "cisco" in name:
+        return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><g stroke="#049FD9" stroke-width="7" stroke-linecap="round"><line x1="20" y1="68" x2="20" y2="52"/><line x1="36" y1="74" x2="36" y2="40"/><line x1="52" y1="80" x2="52" y2="28"/><line x1="68" y1="80" x2="68" y2="28"/><line x1="84" y1="74" x2="84" y2="40"/><line x1="100" y1="68" x2="100" y2="52"/></g></svg>'
+    if "wipro" in name:
+        return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="38" fill="none" stroke="#3B82F6" stroke-width="6" stroke-dasharray="10 8"/><circle cx="60" cy="22" r="7" fill="#E11D48"/><circle cx="98" cy="60" r="7" fill="#10B981"/><circle cx="60" cy="98" r="7" fill="#F59E0B"/><circle cx="22" cy="60" r="7" fill="#8B5CF6"/><text x="60" y="67" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="22" fill="#1E3A8A">wipro</text></svg>'
+    if "razorpay" in name:
+        return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><polygon points="68,14 34,64 58,64 46,106 88,52 62,52" fill="#3395FF"/></svg>'
+    if "cred" in name:
+        return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M24 20 H96 V66 C96 88 60 106 60 106 C60 106 24 88 24 66 Z" fill="none" stroke="#1E293B" stroke-width="8"/><text x="60" y="66" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="24" fill="#1E293B">CRED</text></svg>'
+    words = [w[0].upper() for w in (company_name or "CO").split() if w]
+    initials = "".join(words[:2]) or "CO"
+    return f'<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="60" r="46" fill="none" stroke="#3B82F6" stroke-width="7"/><text x="60" y="73" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="38" fill="#1E3A8A">{initials}</text></svg>'
+
 # Sidebar
 st.sidebar.markdown("### 🎓 Student Profile Setup")
 preset = st.sidebar.selectbox(
@@ -1489,6 +1688,8 @@ with tabs[1]:
         
         for idx, job in enumerate(recommended_jobs):
             with st.container(border=True):
+                logo_svg = get_company_logo_svg(job["company_name"])
+                st.markdown(f"<div class='role-bg-watermark' aria-hidden='true'>{logo_svg}</div>", unsafe_allow_html=True)
                 # Card Header
                 h_col1, h_col2 = st.columns([2.5, 1])
                 with h_col1:
