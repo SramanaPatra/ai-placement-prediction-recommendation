@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -23,75 +24,1131 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for modern design
-st.markdown("""
-<style>
-    .main-title {
-        font-size: 2.3rem;
-        font-weight: 800;
-        background: linear-gradient(90deg, #1E3A8A, #3B82F6, #10B981);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 0.2rem;
+# Custom CSS for modern design (Highlighted Neural Network, Glowing Wavy Lines & Calm Aurora)
+st.markdown(
+    '<div class="aurora-bg-layer" aria-hidden="true">'
+    '<div class="orb-wrap orb-wrap-1"><div class="orb orb-1"></div></div>'
+    '<div class="orb-wrap orb-wrap-2"><div class="orb orb-2"></div></div>'
+    '<div class="orb-wrap orb-wrap-3"><div class="orb orb-3"></div></div>'
+    '<div class="orb-wrap orb-wrap-4"><div class="orb orb-4"></div></div>'
+    '<div class="orb-wrap orb-wrap-5"><div class="orb orb-5"></div></div>'
+    '<div class="geo-ring gr-1"></div>'
+    '<div class="geo-ring gr-2"></div>'
+    '<svg class="bipartite-arcs" viewBox="0 0 1440 900" preserveAspectRatio="none">'
+    '<defs>'
+    '<filter id="waveGlow" x="-10%" y="-10%" width="120%" height="120%">'
+    '<feGaussianBlur stdDeviation="3.5" result="blur"/>'
+    '<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>'
+    '</filter>'
+    '<linearGradient id="arcGrad1" x1="0%" y1="0%" x2="100%" y2="0%">'
+    '<stop offset="0%" stop-color="#1E3A8A" stop-opacity="0.65"/>'
+    '<stop offset="38%" stop-color="#3B82F6" stop-opacity="0.72"/>'
+    '<stop offset="70%" stop-color="#8B5CF6" stop-opacity="0.62"/>'
+    '<stop offset="100%" stop-color="#10B981" stop-opacity="0.75"/>'
+    '</linearGradient>'
+    '<linearGradient id="arcGrad2" x1="0%" y1="0%" x2="100%" y2="0%">'
+    '<stop offset="0%" stop-color="#06B6D4" stop-opacity="0.58"/>'
+    '<stop offset="50%" stop-color="#6366F1" stop-opacity="0.65"/>'
+    '<stop offset="100%" stop-color="#10B981" stop-opacity="0.68"/>'
+    '</linearGradient>'
+    '<linearGradient id="ribbonGrad" x1="0%" y1="0%" x2="100%" y2="0%">'
+    '<stop offset="0%" stop-color="#3B82F6" stop-opacity="0.14"/>'
+    '<stop offset="50%" stop-color="#A78BFA" stop-opacity="0.16"/>'
+    '<stop offset="100%" stop-color="#10B981" stop-opacity="0.14"/>'
+    '</linearGradient>'
+    '</defs>'
+    '<path class="wave-ribbon wr-1" d="M -40,170 Q 340,60 720,190 T 1480,150" stroke="url(#ribbonGrad)"/>'
+    '<path class="wave-ribbon wr-2" d="M -40,680 Q 380,800 760,650 T 1480,710" stroke="url(#ribbonGrad)"/>'
+    '<path class="flow-arc arc-1" filter="url(#waveGlow)" d="M -20,140 C 320,40 620,290 960,150 S 1260,60 1460,170" stroke="url(#arcGrad1)"/>'
+    '<path class="flow-arc arc-2" filter="url(#waveGlow)" d="M -20,340 C 380,470 720,180 1060,360 S 1290,480 1460,320" stroke="url(#arcGrad2)"/>'
+    '<path class="flow-arc arc-3" filter="url(#waveGlow)" d="M -20,560 C 340,440 690,710 1020,530 S 1280,430 1460,590" stroke="url(#arcGrad1)"/>'
+    '<path class="flow-arc arc-4" filter="url(#waveGlow)" d="M -20,760 C 420,660 780,860 1120,720 S 1340,630 1460,770" stroke="url(#arcGrad2)"/>'
+    '<path class="flow-arc-solid" filter="url(#waveGlow)" d="M -20,250 Q 360,150 720,260 T 1460,230" stroke="url(#arcGrad2)"/>'
+    '</svg>'
+    '<div class="bg-chip chip-1">🎓 Placement AI</div>'
+    '<div class="bg-chip chip-2">💼 Role Match</div>'
+    '<div class="bg-chip chip-3">⚡ ML Score</div>'
+    '<div class="bg-chip chip-4">&lt;/&gt; DSA</div>'
+    '<div class="bg-chip chip-5">📊 CGPA Fit</div>'
+    '<div class="bg-chip chip-6">✓ Eligible</div>'
+    '<div class="bg-chip chip-7">🚀 Career Path</div>'
+    '<div class="bg-chip chip-8">🔍 Skill Graph</div>'
+    '<div class="bg-chip chip-9">🧠 Neural Match</div>'
+    '<div class="bg-chip chip-10">🎯 93% ROC-AUC</div>'
+    '<div class="bg-chip chip-11">💼 Tier-1 Offers</div>'
+    '<div class="bg-chip chip-12">☁️ Cloud &amp; AI</div>'
+    '<div class="grid-shimmer"></div>'
+    '</div>',
+    unsafe_allow_html=True,
+)
+st.markdown("""<style>
+/* ============================================================
+   Calm Aurora Hue-Shift & Mesh Glassmorphism Theme
+   Palette: Ice Blue · Pale Lavender · Warm Pearl · Soft Mint
+   ============================================================ */
+/* ---- Layer 1: Aurora Gradient Canvas (Pale Lavender & Warm Pearl Cycle) ---- */
+[data-testid="stAppViewContainer"],
+.stApp {
+    background: linear-gradient(-45deg, #DBEAFE, #EDE9FE, #FFF5EB, #D1FAE5, #FCE7F3, #E0E7FF) !important;
+    background-size: 400% 400% !important;
+    animation: auroraShift 22s ease-in-out infinite !important;
+    position: relative;
+}
+@keyframes auroraShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+/* ---- Layer 2: Calm Floating Blurred Mesh Orbs + Scroll Parallax Wrappers ---- */
+.aurora-bg-layer {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+.orb-wrap {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    will-change: transform;
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(55px);
+    will-change: transform, opacity;
+}
+.orb-1 {
+    width: 560px; height: 560px;
+    top: -120px; left: -60px;
+    background: radial-gradient(circle at center, rgba(59, 130, 246, 0.48) 0%, rgba(59, 130, 246, 0) 70%);
+    animation: orbFloat1 32s ease-in-out infinite;
+}
+.orb-2 {
+    width: 620px; height: 620px;
+    top: 10%; right: -120px;
+    background: radial-gradient(circle at center, rgba(16, 185, 129, 0.42) 0%, rgba(16, 185, 129, 0) 70%);
+    animation: orbFloat2 38s ease-in-out infinite;
+    animation-delay: -5s;
+}
+.orb-3 {
+    width: 540px; height: 540px;
+    bottom: -140px; left: 20%;
+    background: radial-gradient(circle at center, rgba(167, 139, 250, 0.48) 0%, rgba(167, 139, 250, 0) 70%);
+    animation: orbFloat3 34s ease-in-out infinite;
+    animation-delay: -10s;
+}
+.orb-4 {
+    width: 460px; height: 460px;
+    top: 42%; left: 38%;
+    background: radial-gradient(circle at center, rgba(6, 182, 212, 0.38) 0%, rgba(6, 182, 212, 0) 70%);
+    animation: orbFloat4 40s ease-in-out infinite;
+    animation-delay: -14s;
+}
+.orb-5 {
+    width: 440px; height: 440px;
+    bottom: 6%; right: 10%;
+    background: radial-gradient(circle at center, rgba(251, 191, 146, 0.42) 0%, rgba(244, 114, 182, 0.16) 40%, rgba(251, 191, 146, 0) 70%);
+    animation: orbFloat1 36s ease-in-out infinite reverse;
+    animation-delay: -8s;
+}
+@keyframes orbFloat1 {
+    0%   { transform: translate3d(0, 0, 0) scale(1); }
+    50%  { transform: translate3d(220px, 140px, 0) scale(1.14); }
+    100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes orbFloat2 {
+    0%   { transform: translate3d(0, 0, 0) scale(1.08); }
+    50%  { transform: translate3d(-240px, 170px, 0) scale(0.94); }
+    100% { transform: translate3d(0, 0, 0) scale(1.08); }
+}
+@keyframes orbFloat3 {
+    0%   { transform: translate3d(0, 0, 0) scale(0.96); }
+    50%  { transform: translate3d(170px, -190px, 0) scale(1.18); }
+    100% { transform: translate3d(0, 0, 0) scale(0.96); }
+}
+@keyframes orbFloat4 {
+    0%   { transform: translate3d(0, 0, 0) scale(1); }
+    33%  { transform: translate3d(-180px, 100px, 0) scale(1.12); }
+    66%  { transform: translate3d(150px, -120px, 0) scale(0.96); }
+    100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+/* ---- Placement & Recommendation Thematic Floating Skill/Job Chips ---- */
+.bg-chip {
+    position: absolute;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: rgba(30, 58, 138, 0.55);
+    background: rgba(255, 255, 255, 0.42);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.12);
+    will-change: transform, opacity;
+    white-space: nowrap;
+}
+.chip-1 { left: 6%;  bottom: -40px; animation: chipRise 26s linear infinite 0s; color: rgba(30, 58, 138, 0.72); }
+.chip-2 { left: 19%; bottom: -40px; animation: chipRise 31s linear infinite -7s; color: rgba(4, 120, 87, 0.72); }
+.chip-3 { left: 32%; bottom: -40px; animation: chipRise 28s linear infinite -14s; color: rgba(67, 56, 202, 0.70); }
+.chip-4 { left: 46%; bottom: -40px; animation: chipRise 33s linear infinite -4s; color: rgba(29, 78, 216, 0.70); }
+.chip-5 { left: 58%; bottom: -40px; animation: chipRise 29s linear infinite -18s; color: rgba(15, 118, 110, 0.72); }
+.chip-6 { left: 71%; bottom: -40px; animation: chipRise 27s linear infinite -11s; color: rgba(4, 120, 87, 0.72); }
+.chip-7 { left: 83%; bottom: -40px; animation: chipRise 34s linear infinite -22s; color: rgba(109, 40, 217, 0.68); }
+.chip-8 { left: 91%; bottom: -40px; animation: chipRise 36s linear infinite -26s; color: rgba(30, 58, 138, 0.70); }
+.chip-9 { left: 14%; bottom: -40px; animation: chipRise 30s linear infinite -16s; color: rgba(67, 56, 202, 0.70); }
+.chip-10 { left: 40%; bottom: -40px; animation: chipRise 32s linear infinite -24s; color: rgba(29, 78, 216, 0.72); }
+.chip-11 { left: 66%; bottom: -40px; animation: chipRise 35s linear infinite -9s; color: rgba(4, 120, 87, 0.70); }
+.chip-12 { left: 79%; bottom: -40px; animation: chipRise 29s linear infinite -19s; color: rgba(14, 116, 144, 0.72); }
+@keyframes chipRise {
+    0%   { transform: translate3d(0, 0, 0) scale(0.92); opacity: 0; }
+    12%  { opacity: 0.78; }
+    85%  { opacity: 0.70; }
+    100% { transform: translate3d(35px, -112vh, 0) scale(1.04); opacity: 0; }
+}
+/* ---- Rotating Geometric Tech Rings ---- */
+.geo-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(59, 130, 246, 0.28);
+    box-shadow: inset 0 0 36px rgba(99, 102, 241, 0.08);
+    pointer-events: none;
+    will-change: transform;
+}
+.gr-1 {
+    width: 440px; height: 440px;
+    top: -110px; right: -90px;
+    animation: spinSlow 46s linear infinite;
+}
+.gr-2 {
+    width: 380px; height: 380px;
+    bottom: -100px; left: 16%;
+    border-color: rgba(16, 185, 129, 0.28);
+    animation: spinSlow 54s linear infinite reverse;
+}
+@keyframes spinSlow {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+/* ---- Live Neural Skill-to-Job Matching Canvas ---- */
+#placement-net-canvas,
+#sidebar-net-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+/* ---- Layer 3: Architectural Dot Grid Shimmer ---- */
+.grid-shimmer {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(30, 58, 138, 0.14) 1.2px, transparent 1.2px);
+    background-size: 26px 26px;
+    opacity: 0.36;
+    animation: gridBreathe 10s ease-in-out infinite;
+}
+@keyframes gridBreathe {
+    0%, 100% { opacity: 0.24; }
+    50%      { opacity: 0.44; }
+}
+/* ---- Zero-height helper iframe cleanup ---- */
+iframe[height="0"] {
+    display: none !important;
+}
+/* ---- Transparent Header + Strict Foreground Layering ---- */
+[data-testid="stHeader"],
+[data-testid="stHeader"] > div {
+    background: transparent !important;
+}
+[data-testid="stMainBlockContainer"],
+.block-container {
+    position: relative;
+    z-index: 1;
+}
+[data-testid="stElementContainer"]:has(.aurora-bg-layer) {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 0 !important;
+    pointer-events: none !important;
+}
+[data-testid="stElementContainer"]:not(:has(.aurora-bg-layer)) {
+    position: relative;
+    z-index: 2;
+}
+/* ---- Animated Sidebar ("Student Profile Setup") ---- */
+[data-testid="stSidebar"] {
+    background: linear-gradient(-45deg, rgba(219, 234, 254, 0.88), rgba(237, 233, 254, 0.88), rgba(255, 245, 235, 0.88), rgba(209, 250, 229, 0.88)) !important;
+    background-size: 350% 350% !important;
+    animation: auroraShift 20s ease-in-out infinite !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.80);
+    box-shadow: 4px 0 28px rgba(30, 58, 138, 0.10);
+    overflow: hidden !important;
+}
+[data-testid="stSidebarContent"] {
+    background: transparent !important;
+    position: relative;
+    z-index: 2;
+}
+.sidebar-bg-layer {
+    position: absolute !important;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0 !important;
+}
+.sidebar-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(42px);
+    will-change: transform;
+}
+.s-orb-1 {
+    width: 240px; height: 240px;
+    top: -40px; left: -50px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.45) 0%, rgba(59, 130, 246, 0) 70%);
+    animation: orbFloat1 26s ease-in-out infinite;
+}
+.s-orb-2 {
+    width: 260px; height: 260px;
+    bottom: 6%; right: -60px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.40) 0%, rgba(16, 185, 129, 0) 70%);
+    animation: orbFloat3 30s ease-in-out infinite;
+}
+.s-orb-3 {
+    width: 220px; height: 220px;
+    top: 42%; left: 10%;
+    background: radial-gradient(circle, rgba(167, 139, 250, 0.40) 0%, rgba(167, 139, 250, 0) 70%);
+    animation: orbFloat2 28s ease-in-out infinite;
+}
+[data-testid="stSidebar"] [data-baseweb="select"] > div {
+    background: rgba(255, 255, 255, 0.78) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 14px rgba(30, 58, 138, 0.08);
+}
+/* ---- Main Title: Slow, Elegant Gradient Shimmer (9s) ---- */
+.main-title {
+    font-size: 2.3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.2rem;
+    background: linear-gradient(90deg, #1E3A8A, #3B82F6, #10B981, #3B82F6, #1E3A8A);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: titleShimmer 9s linear infinite;
+}
+@keyframes titleShimmer {
+    0%   { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+/* ---- Subtitle ---- */
+.subtitle {
+    color: #1E293B;
+    font-size: 1.05rem;
+    font-weight: 500;
+    opacity: 0.88;
+    margin-bottom: 1.5rem;
+}
+/* ---- Frosted Glass Cards ---- */
+.card {
+    background: rgba(255, 255, 255, 0.84) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-bottom: 1rem;
+    box-shadow: 0 8px 28px rgba(30, 58, 138, 0.08);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(30, 58, 138, 0.14);
+}
+/* ---- Frosted Glass Forms, Metrics, Charts, Expanders & Bordered Cards ---- */
+[data-testid="stForm"],
+[data-testid="stMetric"],
+[data-testid="stPlotlyChart"],
+[data-testid="stVerticalBlockBorderWrapper"],
+div[data-testid="stExpander"] {
+    background: rgba(255, 255, 255, 0.84) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 28px rgba(30, 58, 138, 0.08);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+[data-testid="stVerticalBlockBorderWrapper"] {
+    animation: fadeSlideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+[data-testid="stMetric"] {
+    padding: 14px 16px;
+}
+[data-testid="stPlotlyChart"] {
+    padding: 8px;
+}
+[data-testid="stForm"]:hover,
+[data-testid="stMetric"]:hover,
+[data-testid="stVerticalBlockBorderWrapper"]:hover,
+div[data-testid="stExpander"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(30, 58, 138, 0.14);
+}
+/* ---- Primary Submit Button Shimmer ---- */
+button[kind="primary"],
+.stFormSubmitButton button {
+    background: linear-gradient(90deg, #1E3A8A, #3B82F6, #10B981, #3B82F6, #1E3A8A) !important;
+    background-size: 200% auto !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    border-radius: 10px !important;
+    transition: background-position 0.6s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+}
+button[kind="primary"]:hover,
+.stFormSubmitButton button:hover {
+    background-position: right center !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.45);
+}
+/* ---- Sleek Glass Pill Tabs (Streamlit 1.65 React Aria + BaseWeb) ---- */
+[data-testid="stTabs"] [role="tablist"],
+[data-baseweb="tab-list"] {
+    background: rgba(255, 255, 255, 0.72) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.80) !important;
+    border-radius: 999px !important;
+    padding: 6px !important;
+    box-shadow: 0 4px 18px rgba(30, 58, 138, 0.08);
+    gap: 6px;
+}
+[data-testid="stTabs"] [role="tab"],
+[data-baseweb="tab"] {
+    border-radius: 999px !important;
+    padding: 8px 16px !important;
+    transition: background 0.25s ease, color 0.25s ease, transform 0.2s ease !important;
+}
+[data-testid="stTabs"] [role="tab"][aria-selected="true"],
+[data-baseweb="tab"][aria-selected="true"] {
+    background: linear-gradient(90deg, #1E3A8A, #3B82F6, #10B981) !important;
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.30);
+}
+[data-testid="stTabs"] [role="tab"][aria-selected="true"] p {
+    color: #FFFFFF !important;
+}
+[data-testid="stTabs"] [role="tab"]::after,
+[data-testid="stTabs"] [role="tab"]::before,
+[data-baseweb="tab-highlight"] {
+    display: none !important;
+}
+[data-testid="stTabs"] [role="tab"] {
+    border-bottom: none !important;
+}
+/* ---- Badges & Tags ---- */
+.badge-eligible {
+    background: rgba(16, 185, 129, 0.16);
+    color: #047857;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    backdrop-filter: blur(8px);
+    border-radius: 9999px;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.badge-ineligible {
+    background: rgba(239, 68, 68, 0.14);
+    color: #B91C1C;
+    border: 1px solid rgba(239, 68, 68, 0.32);
+    backdrop-filter: blur(8px);
+    border-radius: 9999px;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.tag-matched {
+    background: rgba(59, 130, 246, 0.16);
+    color: #1D4ED8;
+    border: 1px solid rgba(59, 130, 246, 0.32);
+    backdrop-filter: blur(8px);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    display: inline-block;
+    margin: 2px;
+}
+.tag-missing {
+    background: rgba(245, 158, 11, 0.16);
+    color: #B45309;
+    border: 1px solid rgba(245, 158, 11, 0.32);
+    backdrop-filter: blur(8px);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    display: inline-block;
+    margin: 2px;
+}
+.tag-pref {
+    background: rgba(99, 102, 241, 0.14);
+    color: #4338CA;
+    border: 1px solid rgba(99, 102, 241, 0.30);
+    backdrop-filter: blur(8px);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    display: inline-block;
+    margin: 2px;
+}
+/* ---- DataFrames & Plotly: keep crisp over background ---- */
+[data-testid="stDataFrame"],
+.stDataFrame,
+.js-plotly-plot,
+.plotly-notifier {
+    position: relative;
+    z-index: 1;
+}
+/* ---- Toast alerts clean over background ---- */
+[data-testid="stToast"] {
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.70);
+    box-shadow: 0 8px 28px rgba(30, 58, 138, 0.14);
+    z-index: 9999;
+}
+/* ---- Highlighted Glowing Wavy Lines & Ribbons ---- */
+.bipartite-arcs,
+.sidebar-waves {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+.wave-ribbon {
+    fill: none;
+    stroke-width: 24;
+    stroke-linecap: round;
+    animation: ribbonDrift 14s ease-in-out infinite alternate;
+}
+.wr-2 { animation-duration: 18s; animation-direction: alternate-reverse; }
+@keyframes ribbonDrift {
+    0%   { transform: translateY(-10px); opacity: 0.75; }
+    100% { transform: translateY(14px); opacity: 1; }
+}
+.flow-arc {
+    fill: none;
+    stroke-width: 3;
+    stroke-dasharray: 18 14;
+    stroke-linecap: round;
+    animation: arcFlow 12s linear infinite;
+}
+.arc-2 { stroke-width: 2.6; animation-duration: 16s; animation-direction: reverse; stroke-dasharray: 14 16; }
+.arc-3 { stroke-width: 3.2; animation-duration: 19s; stroke-dasharray: 22 14; }
+.arc-4 { stroke-width: 2.4; animation-duration: 15s; animation-direction: reverse; stroke-dasharray: 12 18; }
+.flow-arc-solid {
+    fill: none;
+    stroke-width: 2.2;
+    opacity: 0.70;
+    animation: ribbonDrift 12s ease-in-out infinite alternate;
+}
+@keyframes arcFlow {
+    0%   { stroke-dashoffset: 384; }
+    100% { stroke-dashoffset: 0; }
+}
+/* ---- Sidebar Eligibility Radar / Sonar Pulse ---- */
+.sonar-ring {
+    position: absolute;
+    top: 86px;
+    left: 50%;
+    width: 140px;
+    height: 140px;
+    margin-left: -70px;
+    border-radius: 50%;
+    border: 2px solid rgba(59, 130, 246, 0.42);
+    box-shadow: 0 0 18px rgba(59, 130, 246, 0.20);
+    pointer-events: none;
+    animation: sonarPulse 5.5s ease-out infinite;
+}
+.sr-2 {
+    border-color: rgba(16, 185, 129, 0.42);
+    animation-delay: 2.75s;
+}
+@keyframes sonarPulse {
+    0%   { transform: scale(0.45); opacity: 0.85; }
+    100% { transform: scale(2.4); opacity: 0; }
+}
+/* ---- UI Helper Pills & Sidebar Status Card ---- */
+.sidebar-status-card {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.88);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-top: 14px;
+    box-shadow: 0 6px 20px rgba(30, 58, 138, 0.08);
+    font-size: 0.86rem;
+    color: #1E293B;
+}
+.sidebar-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px dashed rgba(148, 163, 184, 0.35);
+}
+.sidebar-stat-row:last-child { border-bottom: none; }
+.kpi-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.kpi-mini-pill {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.88);
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(30, 58, 138, 0.07);
+}
+.kpi-mini-label {
+    font-size: 0.72rem;
+    color: #64748B;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.kpi-mini-val {
+    font-size: 1.08rem;
+    font-weight: 800;
+    color: #1E3A8A;
+    margin-top: 2px;
+}
+/* ---- Prediction Risk-State Ambient Glows & Staggered Recommendations ---- */
+.risk-banner {
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin: 10px 0 14px 0;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    animation: fadeSlideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.risk-glow-high {
+    background: rgba(220, 252, 231, 0.78);
+    border: 1px solid rgba(16, 185, 129, 0.45);
+    color: #065F46;
+    box-shadow: 0 0 24px rgba(16, 185, 129, 0.22);
+    animation: fadeSlideUp 0.55s ease both, pulseGreen 4s ease-in-out infinite;
+}
+.risk-glow-moderate {
+    background: rgba(254, 243, 199, 0.80);
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    color: #92400E;
+    box-shadow: 0 0 22px rgba(245, 158, 11, 0.20);
+}
+.risk-glow-low {
+    background: rgba(254, 226, 226, 0.82);
+    border: 1px solid rgba(239, 68, 68, 0.45);
+    color: #991B1B;
+    box-shadow: 0 0 22px rgba(239, 68, 68, 0.22);
+    animation: fadeSlideUp 0.55s ease both, pulseRed 3.2s ease-in-out infinite;
+}
+@keyframes pulseGreen {
+    0%, 100% { box-shadow: 0 4px 18px rgba(16, 185, 129, 0.16); }
+    50%      { box-shadow: 0 6px 28px rgba(16, 185, 129, 0.34); }
+}
+@keyframes pulseRed {
+    0%, 100% { box-shadow: 0 4px 18px rgba(239, 68, 68, 0.16); }
+    50%      { box-shadow: 0 6px 28px rgba(239, 68, 68, 0.34); }
+}
+.rec-item {
+    background: rgba(255, 255, 255, 0.65);
+    border-left: 3px solid #3B82F6;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    font-size: 0.92rem;
+    color: #1E293B;
+    opacity: 0;
+    animation: fadeSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+/* ---- Staggered Job Card Entrance & Animated Match Progress Bars ---- */
+@keyframes fadeSlideUp {
+    0%   { opacity: 0; transform: translate3d(0, 16px, 0); }
+    100% { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.job-card-anim {
+    opacity: 0;
+    animation: fadeSlideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.match-bar-track {
+    width: 100%;
+    height: 10px;
+    background: rgba(203, 213, 225, 0.55);
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 8px 0 4px 0;
+}
+.match-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #1E3A8A, #3B82F6, #10B981);
+    transform-origin: left center;
+    animation: barGrow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes barGrow {
+    0%   { transform: scaleX(0); }
+    100% { transform: scaleX(1); }
+}
+.tag-matched, .tag-missing, .tag-pref {
+    animation: tagPop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes tagPop {
+    0%   { opacity: 0; transform: scale(0.88); }
+    100% { opacity: 1; transform: scale(1); }
+}
+/* ---- Input & Slider Focus Glow Micro-Interactions ---- */
+[data-baseweb="input"]:focus-within,
+[data-baseweb="select"] > div:focus-within,
+[data-baseweb="textarea"]:focus-within {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.22) !important;
+    border-color: #3B82F6 !important;
+    transition: box-shadow 0.25s ease, border-color 0.25s ease !important;
+}
+/* ---- Reduced Motion Fallback ---- */
+@media (prefers-reduced-motion: reduce) {
+    [data-testid="stAppViewContainer"], .stApp, [data-testid="stSidebar"] {
+        animation: none !important;
+        background: linear-gradient(120deg, #DBEAFE 0%, #EDE9FE 50%, #FFF5EB 100%) !important;
     }
-    .subtitle {
-        color: #64748B;
-        font-size: 1.05rem;
-        margin-bottom: 1.5rem;
+    .orb, .orb-wrap, .sidebar-orb, .sonar-ring, .flow-arc, .flow-arc-solid, .wave-ribbon,
+    .geo-ring, .bg-chip, .grid-shimmer, .main-title, .risk-glow-high, .risk-glow-low,
+    .rec-item, .job-card-anim, .match-bar-fill, .tag-matched, .tag-missing, .tag-pref,
+    button[kind="primary"], .stFormSubmitButton button {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
     }
-    .card {
-        background-color: #FFFFFF;
-        border-radius: 12px;
-        padding: 18px 22px;
-        border: 1px solid #E2E8F0;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        margin-bottom: 1rem;
+    .bg-chip { opacity: 0.35 !important; }
+    .grid-shimmer { opacity: 0.30; }
+    * { transition: none !important; }
+}
+</style>""", unsafe_allow_html=True)
+
+# AI Skill-to-Job Constellation Network (Main + Student Profile Setup Sidebar) + Scroll Parallax
+components.html("""
+<script>
+(function() {
+    const parentWin = window.parent;
+    const doc = parentWin.document;
+    const reducedMotion = parentWin.matchMedia && parentWin.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (parentWin.__auroraCleanup) {
+        parentWin.__auroraCleanup();
     }
-    .badge-eligible {
-        background-color: #DCFCE7;
-        color: #166534;
-        padding: 4px 10px;
-        border-radius: 9999px;
-        font-size: 0.8rem;
-        font-weight: 600;
+
+    // 1. Scroll parallax + orb direction reversal
+    const factors = [
+        { sel: '.orb-wrap-1', vx: 0.06,  vy: -0.10 },
+        { sel: '.orb-wrap-2', vx: -0.08, vy: 0.08 },
+        { sel: '.orb-wrap-3', vx: 0.05,  vy: -0.12 },
+        { sel: '.orb-wrap-4', vx: -0.04, vy: -0.06 },
+        { sel: '.orb-wrap-5', vx: 0.07,  vy: 0.09 }
+    ];
+    let lastScroll = 0;
+    let dir = 1;
+    let ticking = false;
+
+    function getScrollTop(target) {
+        if (target && typeof target.scrollTop === 'number' && target !== doc) {
+            return target.scrollTop;
+        }
+        const main = doc.querySelector('[data-testid="stMain"]') || doc.querySelector('[data-testid="stAppViewContainer"]');
+        return (main ? main.scrollTop : 0) || parentWin.scrollY || doc.documentElement.scrollTop || 0;
     }
-    .badge-ineligible {
-        background-color: #FEE2E2;
-        color: #991B1B;
-        padding: 4px 10px;
-        border-radius: 9999px;
-        font-size: 0.8rem;
-        font-weight: 600;
+
+    function applyParallax(scrollY) {
+        factors.forEach(function(f) {
+            const el = doc.querySelector(f.sel);
+            if (!el) return;
+            const dx = Math.max(-90, Math.min(90, scrollY * f.vx * dir));
+            const dy = Math.max(-90, Math.min(90, scrollY * f.vy));
+            el.style.transform = 'translate3d(' + dx.toFixed(1) + 'px, ' + dy.toFixed(1) + 'px, 0)';
+        });
     }
-    .tag-matched {
-        background-color: #D1FAE5;
-        color: #065F46;
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-size: 0.78rem;
-        display: inline-block;
-        margin: 2px;
+
+    function onScroll(e) {
+        if (reducedMotion) return;
+        const current = getScrollTop(e.target);
+        if (Math.abs(current - lastScroll) > 2) {
+            dir = current >= lastScroll ? 1 : -1;
+            lastScroll = current;
+        }
+        if (!ticking) {
+            ticking = true;
+            parentWin.requestAnimationFrame(function() {
+                applyParallax(lastScroll);
+                ticking = false;
+            });
+        }
     }
-    .tag-missing {
-        background-color: #FEE2E2;
-        color: #991B1B;
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-size: 0.78rem;
-        display: inline-block;
-        margin: 2px;
+
+    // 2. Ensure Sidebar animated layer exists inside [data-testid="stSidebar"]
+    function ensureSidebarLayer() {
+        const sidebar = doc.querySelector('[data-testid="stSidebar"]');
+        if (!sidebar) return null;
+        let layer = sidebar.querySelector('.sidebar-bg-layer');
+        if (!layer) {
+            layer = doc.createElement('div');
+            layer.className = 'sidebar-bg-layer';
+            layer.setAttribute('aria-hidden', 'true');
+            layer.innerHTML =
+                '<div class="sidebar-orb s-orb-1"></div>' +
+                '<div class="sidebar-orb s-orb-2"></div>' +
+                '<div class="sidebar-orb s-orb-3"></div>' +
+                '<div class="sonar-ring sr-1"></div>' +
+                '<div class="sonar-ring sr-2"></div>' +
+                '<svg class="sidebar-waves" viewBox="0 0 320 900" preserveAspectRatio="none">' +
+                '<defs><linearGradient id="sWaveGrad" x1="0%" y1="0%" x2="100%" y2="100%">' +
+                '<stop offset="0%" stop-color="#3B82F6" stop-opacity="0.55"/>' +
+                '<stop offset="50%" stop-color="#8B5CF6" stop-opacity="0.50"/>' +
+                '<stop offset="100%" stop-color="#10B981" stop-opacity="0.60"/>' +
+                '</linearGradient></defs>' +
+                '<path class="flow-arc arc-1" d="M -10,160 C 90,80 210,260 330,180" stroke="url(#sWaveGrad)"/>' +
+                '<path class="flow-arc arc-2" d="M -10,470 C 110,560 200,360 330,490" stroke="url(#sWaveGrad)"/>' +
+                '<path class="flow-arc arc-3" d="M -10,740 C 80,660 230,830 330,720" stroke="url(#sWaveGrad)"/>' +
+                '</svg>' +
+                '<canvas id="sidebar-net-canvas"></canvas>';
+            sidebar.insertBefore(layer, sidebar.firstChild);
+        }
+        return layer.querySelector('#sidebar-net-canvas');
     }
-    .tag-pref {
-        background-color: #E0E7FF;
-        color: #3730A3;
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-size: 0.78rem;
-        display: inline-block;
-        margin: 2px;
+
+    // 3. Ensure Main Constellation Canvas exists inside .aurora-bg-layer
+    function ensureMainCanvas() {
+        const layer = doc.querySelector('.aurora-bg-layer');
+        if (!layer) return null;
+        let canvas = layer.querySelector('#placement-net-canvas');
+        if (!canvas) {
+            canvas = doc.createElement('canvas');
+            canvas.id = 'placement-net-canvas';
+            layer.appendChild(canvas);
+        }
+        return canvas;
     }
-</style>
-""", unsafe_allow_html=True)
+
+    const pointer = { x: -9999, y: -9999, active: false };
+
+    // 4. Highlighted Neural Network & Skill-to-Job Matching Renderer
+    function createConstellation(canvas, opts) {
+        if (!canvas) return null;
+        const ctx = canvas.getContext('2d');
+        let width = 0, height = 0;
+        const nodes = [];
+
+        function seedNodes() {
+            nodes.length = 0;
+            for (let i = 0; i < opts.count; i++) {
+                const kind = i % 2 === 0 ? 'skill' : 'job';
+                const isHub = i % 4 === 0;
+                nodes.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * opts.speed,
+                    vy: (Math.random() - 0.5) * opts.speed,
+                    r: isHub ? (5.2 + Math.random() * 1.8) : (kind === 'job' ? (3.6 + Math.random() * 1.4) : (2.8 + Math.random() * 1.2)),
+                    kind: kind,
+                    isHub: isHub,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        function resize() {
+            const parentEl = canvas.parentElement;
+            const hostEl = parentEl.parentElement || parentEl;
+            const rect = parentEl.getBoundingClientRect();
+            const hostRect = hostEl.getBoundingClientRect();
+            const dpr = Math.min(parentWin.devicePixelRatio || 1, 2);
+            const prevH = height;
+            width = Math.max(rect.width, hostRect.width, 1);
+            height = Math.max(rect.height, hostRect.height, parentWin.innerHeight || 1);
+            canvas.width = Math.floor(width * dpr);
+            canvas.height = Math.floor(height * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            if (nodes.length === 0 || (prevH <= 10 && height > 50)) {
+                seedNodes();
+            }
+        }
+        resize();
+
+        let ro = null;
+        if (typeof parentWin.ResizeObserver === 'function') {
+            ro = new parentWin.ResizeObserver(function() { resize(); });
+            ro.observe(canvas.parentElement);
+            if (canvas.parentElement.parentElement) {
+                ro.observe(canvas.parentElement.parentElement);
+            }
+        }
+
+        function step(time) {
+            ctx.clearRect(0, 0, width, height);
+            const hostRect = canvas.getBoundingClientRect();
+            const localPtrX = pointer.x - hostRect.left;
+            const localPtrY = pointer.y - hostRect.top;
+
+            if (!reducedMotion) {
+                for (let i = 0; i < nodes.length; i++) {
+                    const n = nodes[i];
+                    n.x += n.vx;
+                    n.y += n.vy;
+                    if (n.x < -12) n.x = width + 12;
+                    if (n.x > width + 12) n.x = -12;
+                    if (n.y < -12) n.y = height + 12;
+                    if (n.y > height + 12) n.y = -12;
+                }
+            }
+
+            // Draw highlighted neural synaptic edges & glowing signal impulses
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const a = nodes[i];
+                    const b = nodes[j];
+                    const dx = b.x - a.x;
+                    const dy = b.y - a.y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist < opts.linkDist) {
+                        const strength = 1 - dist / opts.linkDist;
+                        const isMatch = a.kind !== b.kind;
+                        ctx.beginPath();
+                        ctx.moveTo(a.x, a.y);
+                        ctx.lineTo(b.x, b.y);
+                        if (isMatch) {
+                            ctx.strokeStyle = 'rgba(16, 185, 129, ' + Math.min(0.85, strength * opts.matchAlpha).toFixed(3) + ')';
+                            ctx.lineWidth = 1.45 + strength * 0.9;
+                        } else {
+                            ctx.strokeStyle = 'rgba(79, 70, 229, ' + Math.min(0.65, strength * opts.peerAlpha).toFixed(3) + ')';
+                            ctx.lineWidth = 1.0 + strength * 0.6;
+                        }
+                        ctx.stroke();
+
+                        // Bright neural impulse + trailing glow along Skill <-> Job edges
+                        if (isMatch && !reducedMotion && strength > 0.25) {
+                            const t = ((time * 0.00048 + (i * 0.17 + j * 0.11)) % 1);
+                            const px = a.x + dx * t;
+                            const py = a.y + dy * t;
+                            ctx.beginPath();
+                            ctx.arc(px, py, 2.7, 0, Math.PI * 2);
+                            ctx.fillStyle = 'rgba(16, 185, 129, ' + Math.min(0.95, strength * 0.95).toFixed(3) + ')';
+                            ctx.shadowColor = 'rgba(16, 185, 129, 0.85)';
+                            ctx.shadowBlur = 8;
+                            ctx.fill();
+                            ctx.shadowBlur = 0;
+                        }
+                    }
+                }
+            }
+
+            // Subtle pointer proximity synaptic lines
+            if (pointer.active && !reducedMotion && localPtrX >= 0 && localPtrX <= width && localPtrY >= 0 && localPtrY <= height) {
+                for (let i = 0; i < nodes.length; i++) {
+                    const n = nodes[i];
+                    const d = Math.hypot(localPtrX - n.x, localPtrY - n.y);
+                    if (d < opts.linkDist * 0.95) {
+                        const s = 1 - d / (opts.linkDist * 0.95);
+                        ctx.beginPath();
+                        ctx.moveTo(n.x, n.y);
+                        ctx.lineTo(localPtrX, localPtrY);
+                        ctx.strokeStyle = 'rgba(6, 182, 212, ' + (s * 0.45).toFixed(3) + ')';
+                        ctx.lineWidth = 1.2;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // Draw glowing Skill & Job neural nodes + hub orbital rings
+            for (let i = 0; i < nodes.length; i++) {
+                const n = nodes[i];
+                const pulse = reducedMotion ? 1 : 0.86 + 0.16 * Math.sin(time * 0.0024 + n.phase);
+                const radius = n.r * pulse;
+
+                // Outer halo
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, radius * 2.1, 0, Math.PI * 2);
+                ctx.fillStyle = n.kind === 'job' ? 'rgba(16, 185, 129, 0.14)' : 'rgba(59, 130, 246, 0.14)';
+                ctx.fill();
+
+                // Hub rotating dashed orbital ring
+                if (n.isHub) {
+                    ctx.save();
+                    ctx.translate(n.x, n.y);
+                    ctx.rotate(time * 0.0007 + n.phase);
+                    ctx.setLineDash([4, 4]);
+                    ctx.beginPath();
+                    ctx.arc(0, 0, radius + 5.5, 0, Math.PI * 2);
+                    ctx.strokeStyle = n.kind === 'job' ? 'rgba(16, 185, 129, 0.48)' : 'rgba(99, 102, 241, 0.48)';
+                    ctx.lineWidth = 1.1;
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                // Core glowing node
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, radius, 0, Math.PI * 2);
+                if (n.kind === 'job') {
+                    ctx.fillStyle = 'rgba(16, 185, 129, 0.82)';
+                    ctx.shadowColor = 'rgba(16, 185, 129, 0.75)';
+                } else {
+                    ctx.fillStyle = 'rgba(59, 130, 246, 0.82)';
+                    ctx.shadowColor = 'rgba(99, 102, 241, 0.70)';
+                }
+                ctx.shadowBlur = 14;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        return {
+            resize: resize,
+            step: step,
+            disconnect: function() { if (ro) ro.disconnect(); }
+        };
+    }
+
+    let mainNet = null;
+    let sideNet = null;
+    let rafId = null;
+    let retryTimer = null;
+    let attempts = 0;
+
+    function initNets() {
+        if (!mainNet) {
+            const mc = ensureMainCanvas();
+            if (mc) {
+                mainNet = createConstellation(mc, { count: 52, speed: 0.40, linkDist: 190, matchAlpha: 0.72, peerAlpha: 0.45 });
+            }
+        }
+        if (!sideNet) {
+            const sc = ensureSidebarLayer();
+            if (sc) {
+                sideNet = createConstellation(sc, { count: 22, speed: 0.34, linkDist: 130, matchAlpha: 0.70, peerAlpha: 0.44 });
+            }
+        }
+        if ((!mainNet || !sideNet) && attempts < 25) {
+            attempts += 1;
+            retryTimer = parentWin.setTimeout(initNets, 150);
+        }
+    }
+
+    initNets();
+
+    function animate(time) {
+        if (mainNet) mainNet.step(time);
+        if (sideNet) sideNet.step(time);
+        if (!reducedMotion) {
+            rafId = parentWin.requestAnimationFrame(animate);
+        }
+    }
+    rafId = parentWin.requestAnimationFrame(animate);
+
+    function onResize() {
+        if (mainNet) mainNet.resize();
+        if (sideNet) sideNet.resize();
+    }
+
+    // 5. KPI Metric Roll-Up Animation
+    function animateMetrics() {
+        if (reducedMotion) return;
+        const els = doc.querySelectorAll('[data-testid="stMetricValue"] div, [data-testid="stMetricValue"]');
+        els.forEach(function(el) {
+            if (el.children.length > 0) return;
+            const raw = (el.textContent || '').trim();
+            if (!raw || el.dataset.rolledVal === raw) return;
+            const m = raw.match(/^([0-9]+(?:\.[0-9]+)?)(%?)$/);
+            if (!m) return;
+            const target = parseFloat(m[1]);
+            const suffix = m[2] || '';
+            const decimals = (m[1].split('.')[1] || '').length;
+            el.dataset.rolledVal = raw;
+            const start = performance.now();
+            const dur = 680;
+            function tick(now) {
+                const t = Math.min((now - start) / dur, 1);
+                const ease = 1 - Math.pow(1 - t, 3);
+                const cur = target * ease;
+                const formatted = cur.toFixed(decimals) + suffix;
+                el.dataset.rolledVal = formatted;
+                el.textContent = formatted;
+                if (t < 1) {
+                    parentWin.requestAnimationFrame(tick);
+                } else {
+                    el.dataset.rolledVal = raw;
+                    el.textContent = raw;
+                }
+            }
+            parentWin.requestAnimationFrame(tick);
+        });
+    }
+    animateMetrics();
+    let metricObs = null;
+    if (typeof parentWin.MutationObserver === 'function') {
+        metricObs = new parentWin.MutationObserver(function() { animateMetrics(); });
+        metricObs.observe(doc.body, { childList: true, subtree: true });
+    }
+
+    function onMouseMove(e) {
+        pointer.x = e.clientX;
+        pointer.y = e.clientY;
+        pointer.active = true;
+    }
+    function onMouseLeave() {
+        pointer.active = false;
+    }
+
+    doc.addEventListener('scroll', onScroll, { capture: true, passive: true });
+    parentWin.addEventListener('scroll', onScroll, { passive: true });
+    parentWin.addEventListener('resize', onResize, { passive: true });
+    doc.addEventListener('mousemove', onMouseMove, { passive: true });
+    doc.addEventListener('mouseleave', onMouseLeave, { passive: true });
+
+    parentWin.__auroraCleanup = function() {
+        if (rafId) parentWin.cancelAnimationFrame(rafId);
+        if (retryTimer) parentWin.clearTimeout(retryTimer);
+        if (mainNet) mainNet.disconnect();
+        if (sideNet) sideNet.disconnect();
+        if (metricObs) metricObs.disconnect();
+        doc.removeEventListener('scroll', onScroll, { capture: true });
+        parentWin.removeEventListener('scroll', onScroll);
+        parentWin.removeEventListener('resize', onResize);
+        doc.removeEventListener('mousemove', onMouseMove);
+        doc.removeEventListener('mouseleave', onMouseLeave);
+    };
+})();
+</script>
+""", height=0)
 
 # Initialize database and model instances
 @st.cache_resource
@@ -172,6 +1229,30 @@ else:
     default_backlogs = 0
     default_skills = ["Java", "Python", "SQL", "Data Structures", "Git"]
 
+# Sidebar Live AI Engine & Preset Snapshot Card
+_jobs_count = len(get_all_jobs())
+_profiles_count = len(get_recent_profiles(100))
+_champ_auc = predictor.bundle["metrics"]["roc_auc"]
+st.sidebar.markdown(
+    f"""
+    <div class="sidebar-status-card">
+        <div style="font-weight:700; color:#1E3A8A; margin-bottom:8px;">🧠 AI Engine &amp; DB Telemetry</div>
+        <div class="sidebar-stat-row"><span>Champion Model</span><b>{predictor.bundle['model_name']}</b></div>
+        <div class="sidebar-stat-row"><span>Validation ROC-AUC</span><b>{_champ_auc:.3f}</b></div>
+        <div class="sidebar-stat-row"><span>Active Job Drives</span><b>{_jobs_count} Roles</b></div>
+        <div class="sidebar-stat-row"><span>Saved Assessments</span><b>{_profiles_count} Profiles</b></div>
+    </div>
+    <div class="sidebar-status-card">
+        <div style="font-weight:700; color:#047857; margin-bottom:8px;">⚡ Active Preset Snapshot</div>
+        <div class="sidebar-stat-row"><span>Candidate</span><b>{default_name}</b></div>
+        <div class="sidebar-stat-row"><span>Target CGPA</span><b>{default_cgpa:.1f} / 10</b></div>
+        <div class="sidebar-stat-row"><span>Coding Score</span><b>{int(default_coding)} / 100</b></div>
+        <div class="sidebar-stat-row"><span>Backlogs</span><b>{default_backlogs}</b></div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 # App Navigation
 tabs = st.tabs([
     "🎯 Placement Prediction",
@@ -239,6 +1320,19 @@ with tabs[0]:
     with col2:
         st.markdown("#### 🎯 Placement Prediction Output")
         
+        # 4-Pill Quick Profile Snapshot
+        st.markdown(
+            f"""
+            <div class="kpi-mini-grid">
+                <div class="kpi-mini-pill"><div class="kpi-mini-label">CGPA</div><div class="kpi-mini-val">{cgpa:.2f}</div></div>
+                <div class="kpi-mini-pill"><div class="kpi-mini-label">Coding</div><div class="kpi-mini-val">{int(coding_score)}/100</div></div>
+                <div class="kpi-mini-pill"><div class="kpi-mini-label">Internships</div><div class="kpi-mini-val">{internships}</div></div>
+                <div class="kpi-mini-pill"><div class="kpi-mini-label">Backlogs</div><div class="kpi-mini-val" style="color:{'#047857' if backlogs == 0 else '#B91C1C'};">{backlogs}</div></div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        
         # Plotly Gauge Chart
         gauge_color = "#10B981" if prob >= 0.75 else ("#F59E0B" if prob >= 0.45 else "#EF4444")
         
@@ -266,21 +1360,74 @@ with tabs[0]:
                 }
             }
         ))
-        fig.update_layout(height=260, margin=dict(l=20, r=20, t=40, b=10))
+        fig.update_layout(height=260, margin=dict(l=20, r=20, t=40, b=10), paper_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig, use_container_width=True)
         
-        # Status Box
+        # Status Box with Risk-State Ambient Glow
         if prob >= 0.75:
-            st.success(f"**Status: {status}**\n\nThe candidate meets high placement probability benchmarks across academics and technical evaluation.")
+            st.markdown(
+                f"<div class='risk-banner risk-glow-high'><b>Status: {status}</b><br><br>"
+                "The candidate meets high placement probability benchmarks across academics and technical evaluation.</div>",
+                unsafe_allow_html=True,
+            )
         elif prob >= 0.45:
-            st.warning(f"**Status: {status}**\n\nThe candidate has competitive baseline metrics but needs strengthening in key evaluated parameters.")
+            st.markdown(
+                f"<div class='risk-banner risk-glow-moderate'><b>Status: {status}</b><br><br>"
+                "The candidate has competitive baseline metrics but needs strengthening in key evaluated parameters.</div>",
+                unsafe_allow_html=True,
+            )
         else:
-            st.error(f"**Status: {status}**\n\nHigh risk of campus placement rejection. Follow targeted guidance below to clear eligibility thresholds.")
+            st.markdown(
+                f"<div class='risk-banner risk-glow-low'><b>Status: {status}</b><br><br>"
+                "High risk of campus placement rejection. Follow targeted guidance below to clear eligibility thresholds.</div>",
+                unsafe_allow_html=True,
+            )
             
-        # Key Recommendations
+        # Key Recommendations (Staggered Reveal)
         st.markdown("##### 📌 AI-Powered Personalized Recommendations:")
-        for rec in result["recommendations"]:
-            st.markdown(f"- {rec}")
+        for idx, rec in enumerate(result["recommendations"]):
+            st.markdown(
+                f"<div class='rec-item' style='animation-delay: {idx * 0.09:.2f}s;'>{rec}</div>",
+                unsafe_allow_html=True,
+            )
+
+        # Profile Benchmark Radar Chart (Candidate vs Tier-1 Placed Benchmark)
+        radar_cats = ["CGPA", "Coding Score", "Projects", "Internships", "Soft Skills"]
+        cand_vals = [
+            round((cgpa / 10.0) * 100, 1),
+            round(coding_score, 1),
+            round(min(projects / 5.0, 1.0) * 100, 1),
+            round(min(internships / 3.0, 1.0) * 100, 1),
+            round((soft_skills / 10.0) * 100, 1),
+        ]
+        bench_vals = [82.0, 80.0, 65.0, 67.0, 80.0]
+        fig_radar = go.Figure()
+        fig_radar.add_trace(go.Scatterpolar(
+            r=cand_vals + [cand_vals[0]],
+            theta=radar_cats + [radar_cats[0]],
+            fill="toself",
+            name=name or "Candidate",
+            line=dict(color="#3B82F6", width=2.5),
+            fillcolor="rgba(59, 130, 246, 0.22)"
+        ))
+        fig_radar.add_trace(go.Scatterpolar(
+            r=bench_vals + [bench_vals[0]],
+            theta=radar_cats + [radar_cats[0]],
+            fill="toself",
+            name="Placed Benchmark",
+            line=dict(color="#10B981", width=2, dash="dash"),
+            fillcolor="rgba(16, 185, 129, 0.12)"
+        ))
+        fig_radar.update_layout(
+            title=dict(text="Candidate vs. Placed Benchmark (%)", font=dict(size=15, color="#1E293B")),
+            polar=dict(radialaxis=dict(visible=True, range=[0, 100], tickfont=dict(size=10)), bgcolor="rgba(255,255,255,0.45)"),
+            showlegend=True,
+            legend=dict(orientation="h", yanchor="bottom", y=-0.22, xanchor="center", x=0.5),
+            height=290,
+            margin=dict(l=35, r=35, t=45, b=45),
+            paper_bgcolor="rgba(0,0,0,0)"
+        )
+        st.plotly_chart(fig_radar, use_container_width=True)
             
         # Save to DB option
         if submit_btn:
@@ -290,6 +1437,8 @@ with tabs[0]:
                 cgpa, ssc, hsc, internships, projects, int(coding_score),
                 int(soft_skills), backlogs, skills_str, round(prob, 4), status
             )
+            if prob >= 0.75:
+                st.balloons()
             st.toast(f"✅ Assessment saved to database (Profile ID: {saved_id})")
 
 # -------------------------------------------------------------
@@ -325,23 +1474,39 @@ with tabs[1]:
     if not recommended_jobs:
         st.info("No matching jobs found for the selected criteria.")
     else:
+        eligible_jobs = [j for j in recommended_jobs if j["is_eligible"]]
+        top_match = max(j["match_percentage"] for j in recommended_jobs)
+        top_ctc = max(j["salary_lpa"] for j in recommended_jobs)
+        avg_match = sum(j["match_percentage"] for j in recommended_jobs) / len(recommended_jobs)
+
+        jm1, jm2, jm3, jm4 = st.columns(4)
+        jm1.metric("Eligible Roles", f"{len(eligible_jobs)}/{len(recommended_jobs)}")
+        jm2.metric("Highest Match", f"{top_match:.1f}%")
+        jm3.metric("Top CTC Offered", f"₹ {top_ctc:.1f} LPA")
+        jm4.metric("Avg Match Score", f"{avg_match:.1f}%")
+
         st.markdown(f"### 🎯 Found {len(recommended_jobs)} Recommended Roles")
         
-        for job in recommended_jobs:
-            with st.container():
-                st.markdown("<div class='card'>", unsafe_allow_html=True)
-                
+        for idx, job in enumerate(recommended_jobs):
+            with st.container(border=True):
                 # Card Header
                 h_col1, h_col2 = st.columns([2.5, 1])
                 with h_col1:
-                    st.markdown(f"### {job['role_title']} &nbsp;•&nbsp; <span style='color:#2563EB;'>{job['company_name']}</span>", unsafe_allow_html=True)
+                    st.markdown(
+                        f"<h3 class='job-card-anim' style='animation-delay: {idx * 0.08:.2f}s; margin-top: 0;'>"
+                        f"{job['role_title']} &nbsp;•&nbsp; <span style='color:#2563EB;'>{job['company_name']}</span></h3>",
+                        unsafe_allow_html=True,
+                    )
                     st.markdown(f"**Domain:** {job['department']} &nbsp;|&nbsp; **Location:** {job['location']} &nbsp;|&nbsp; **CTC:** `₹ {job['salary_lpa']} LPA`")
                 with h_col2:
                     score = job['match_percentage']
                     badge_class = "badge-eligible" if job['is_eligible'] else "badge-ineligible"
                     st.markdown(f"<div style='text-align:right;'><span class='{badge_class}'>{job['eligibility_status']}</span></div>", unsafe_allow_html=True)
-                    st.progress(score / 100.0)
-                    st.markdown(f"<div style='text-align:right; font-weight:700; color:#1E3A8A;'>{score}% Profile Match</div>", unsafe_allow_html=True)
+                    st.markdown(
+                        f"<div class='match-bar-track'><div class='match-bar-fill' style='width: {score}%; animation-delay: {idx * 0.08 + 0.15:.2f}s;'></div></div>"
+                        f"<div style='text-align:right; font-weight:700; color:#1E3A8A;'>{score}% Profile Match</div>",
+                        unsafe_allow_html=True,
+                    )
                 
                 # Skill badges
                 st.markdown("---")
@@ -374,8 +1539,6 @@ with tabs[1]:
                 with st.expander("📄 View Role Description"):
                     st.write(job['description'])
                     st.write(f"**Eligibility Criteria:** Minimum CGPA: `{job['min_cgpa']}`, Max Backlogs: `{job['max_backlogs']}`")
-                    
-                st.markdown("</div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
 # TAB 3: COMPANY & JOB OPENINGS DATABASE (DB)
@@ -385,7 +1548,13 @@ with tabs[2]:
     st.markdown("<div class='subtitle'>Manage and explore real-time company recruitment drives stored in the SQLite database.</div>", unsafe_allow_html=True)
     
     df_all_jobs = get_all_jobs()
-    
+
+    db1, db2, db3, db4 = st.columns(4)
+    db1.metric("Total Active Drives", len(df_all_jobs))
+    db2.metric("Highest CTC", f"₹ {df_all_jobs['salary_lpa'].max():.1f} LPA")
+    db3.metric("Average CTC", f"₹ {df_all_jobs['salary_lpa'].mean():.1f} LPA")
+    db4.metric("Hiring Domains", df_all_jobs["department"].nunique())
+
     st.markdown(f"#### 📋 Current Active Openings ({len(df_all_jobs)} Companies)")
     
     d1, d2 = st.columns([2, 1])
@@ -409,6 +1578,21 @@ with tabs[2]:
         use_container_width=True,
         hide_index=True
     )
+
+    if not filtered_db_jobs.empty:
+        fig_db = px.scatter(
+            filtered_db_jobs,
+            x="min_cgpa",
+            y="salary_lpa",
+            color="department",
+            size="salary_lpa",
+            hover_name="company_name",
+            hover_data=["role_title", "location", "max_backlogs"],
+            title="Company Compensation (LPA) vs. Minimum CGPA Cutoff",
+            labels={"min_cgpa": "Minimum CGPA Cutoff", "salary_lpa": "CTC Package (LPA)", "department": "Domain"}
+        )
+        fig_db.update_layout(height=320, margin=dict(t=45, b=25, l=25, r=25), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(255,255,255,0.45)")
+        st.plotly_chart(fig_db, use_container_width=True)
     
     # Form to insert a new job posting
     with st.expander("➕ Post New Company Job Drive (Recruiter / TPO Portal)"):
@@ -579,20 +1763,22 @@ with tabs[4]:
         if missing_cols:
             st.error(f"Missing required columns in CSV: {missing_cols}")
         else:
-            with st.spinner("Evaluating entire batch with ML placement engine..."):
+            with st.status("🚀 Running AI Batch Placement Engine...", expanded=True) as status_box:
+                st.write("1. Validating & scaling student feature matrix...")
                 probs = []
                 preds = []
                 statuses = []
-                
+                st.write(f"2. Executing ML inference across {len(batch_df)} student profiles...")
                 for _, row in batch_df.iterrows():
                     res = predictor.predict(row.to_dict())
                     probs.append(round(res["placement_probability"] * 100, 2))
                     preds.append(res["prediction"])
                     statuses.append(res["status"])
-                    
+                st.write("3. Aggregating batch placement readiness & risk distribution...")
                 batch_df["Placement_Probability_%"] = probs
                 batch_df["Predicted_Outcome"] = ["Placed" if p == 1 else "Unplaced" for p in preds]
                 batch_df["Risk_Category"] = statuses
+                status_box.update(label=f"✅ Batch Evaluation Complete ({len(batch_df)} Students)", state="complete", expanded=False)
                 
             # Summary Metrics
             placed_count = sum(preds)
