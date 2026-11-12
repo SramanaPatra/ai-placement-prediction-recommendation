@@ -12,7 +12,7 @@ SRC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 if SRC_DIR not in sys.path:
     sys.path.append(SRC_DIR)
 
-from database import init_db, insert_initial_jobs, get_all_jobs, save_student_profile, get_recent_profiles, get_connection
+from database import init_db, insert_initial_jobs, get_all_jobs, save_student_profile, get_recent_profiles, add_job_drive
 from train_model import PlacementPredictor, FEATURE_COLUMNS
 from recommender import JobRecommender
 
@@ -1323,6 +1323,73 @@ def load_system():
 
 predictor, recommender = load_system()
 
+REPORTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reports")
+
+
+def load_report_csv(filename: str):
+    """Load a CSV tuning/analysis artifact from reports/ if present."""
+    path = os.path.join(REPORTS_DIR, filename)
+    return pd.read_csv(path) if os.path.exists(path) else None
+
+
+def render_report_image(filename: str, caption: str):
+    """Render a PNG tuning/sensitivity chart from reports/ if present."""
+    path = os.path.join(REPORTS_DIR, filename)
+    if os.path.exists(path):
+        st.image(path, caption=caption, use_container_width=True)
+    else:
+        st.info(f"Report artifact `{filename}` not found in `reports/`.")
+
+
+def build_readiness_report(
+    name: str,
+    branch: str,
+    profile_data: dict,
+    skills_selected: list,
+    result: dict,
+    radar_cats: list,
+    cand_vals: list,
+    bench_vals: list,
+    top_roles: list,
+) -> str:
+    """Format a Markdown readiness report with probability, benchmarks, and top 3 matched roles."""
+    lines = [
+        f"# Candidate Placement Readiness Report",
+        "",
+        f"- **Candidate Name**: {name or 'Unnamed Candidate'}",
+        f"- **Branch**: {branch}",
+        f"- **Placement Probability**: {result['placement_probability']:.2%}",
+        f"- **Readiness Status**: {result['status']}",
+        f"- **CGPA**: {profile_data['cgpa']:.2f} | **Coding Score**: {profile_data['coding_score']:.0f}/100 | **Internships**: {profile_data['internships']} | **Projects**: {profile_data['projects']} | **Backlogs**: {profile_data['backlogs']}",
+        f"- **Selected Skills**: {', '.join(skills_selected) if skills_selected else 'None'}",
+        "",
+        "## Benchmark Comparison (Candidate vs. Placed Benchmark)",
+        "| Dimension | Candidate (%) | Placed Benchmark (%) | Gap (%) |",
+        "|---|---:|---:|---:|",
+    ]
+    for cat, c_val, b_val in zip(radar_cats, cand_vals, bench_vals):
+        lines.append(f"| {cat} | {c_val:.1f}% | {b_val:.1f}% | {c_val - b_val:+.1f}% |")
+
+    lines.extend(["", "## AI Personalized Recommendations"])
+    for rec in result.get("recommendations", []):
+        lines.append(f"- {rec}")
+
+    lines.extend(["", "## Top 3 Matched Job Roles"])
+    if not top_roles:
+        lines.append("- No job roles available for matching.")
+    else:
+        for idx, job in enumerate(top_roles[:3], start=1):
+            matched = ", ".join(job["matched_required_skills"]) or "None"
+            missing = ", ".join(job["missing_required_skills"]) or "None"
+            lines.extend([
+                f"### {idx}. {job['company_name']} — {job['role_title']}",
+                f"- **Match Score**: {job['match_percentage']}% | **Eligibility**: {job['eligibility_status']} | **CTC**: ₹ {job['salary_lpa']} LPA | **Location**: {job['location']}",
+                f"- **Matched Required Skills**: {matched}",
+                f"- **Missing Skill Gaps**: {missing}",
+            ])
+
+    return "\n".join(lines) + "\n"
+
 # Popular skill list for multi-select
 ALL_SKILLS = [
     "Python", "Java", "C++", "C#", "C", "Golang", "JavaScript", "TypeScript",
@@ -1627,6 +1694,33 @@ with tabs[0]:
             paper_bgcolor="rgba(0,0,0,0)"
         )
         st.plotly_chart(fig_radar, use_container_width=True)
+
+        # Export Candidate Readiness Report (probability, benchmarks, top 3 matched roles)
+        top3_roles = recommender.recommend_jobs(
+            student_skills=skills_selected,
+            student_cgpa=cgpa,
+            student_backlogs=backlogs,
+            top_n=3,
+        )
+        readiness_report = build_readiness_report(
+            name=name,
+            branch=branch,
+            profile_data=profile_data,
+            skills_selected=skills_selected,
+            result=result,
+            radar_cats=radar_cats,
+            cand_vals=cand_vals,
+            bench_vals=bench_vals,
+            top_roles=top3_roles,
+        )
+        safe_candidate = "_".join((name or "candidate").strip().lower().split()) or "candidate"
+        st.download_button(
+            label="📥 Download Candidate Readiness Report",
+            data=readiness_report.encode("utf-8"),
+            file_name=f"{safe_candidate}_readiness_report.md",
+            mime="text/markdown",
+            use_container_width=True,
+        )
             
         # Save to DB option
         if submit_btn:
@@ -1814,19 +1908,24 @@ with tabs[2]:
                 
             post_submit = st.form_submit_button("Publish Job Drive to Database")
             if post_submit:
-                if new_company and new_role and new_req_skills:
-                    conn = get_connection()
-                    cursor = conn.cursor()
-                    cursor.execute("""
-                    INSERT INTO jobs (
-                        company_name, role_title, department, min_cgpa, max_backlogs,
-                        required_skills, preferred_skills, salary_lpa, location, description
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (new_company, new_role, new_dept, new_min_cgpa, new_max_backlogs, new_req_skills, new_pref_skills or "", new_salary, new_location, new_desc))
-                    conn.commit()
-                    conn.close()
-                    st.success(f"🎉 Job Drive for {new_company} ({new_role}) published successfully! Refreshing database.")
-                    st.rerun()
+                if new_company.strip() and new_role.strip() and new_req_skills.strip():
+                    inserted, _ = add_job_drive(
+                        company_name=new_company,
+                        role_title=new_role,
+                        department=new_dept,
+                        min_cgpa=new_min_cgpa,
+                        max_backlogs=new_max_backlogs,
+                        required_skills=new_req_skills,
+                        preferred_skills=new_pref_skills,
+                        salary_lpa=new_salary,
+                        location=new_location,
+                        description=new_desc,
+                    )
+                    if inserted:
+                        st.success(f"🎉 Job Drive for {new_company.strip()} ({new_role.strip()}) published successfully! Refreshing database.")
+                        st.rerun()
+                    else:
+                        st.warning(f"⚠️ Duplicate drive detected: **{new_company.strip()} — {new_role.strip()}** already exists in the database.")
                 else:
                     st.error("Please fill in Company Name, Role Title, and Required Skills.")
 
@@ -1928,6 +2027,177 @@ with tabs[3]:
         fig_cm.update_layout(height=320, margin=dict(t=30, b=30, l=30, r=30))
         st.plotly_chart(fig_cm, use_container_width=True)
 
+    # ---------------------------------------------------------
+    # HYPERPARAMETER TUNING, PREPROCESSING & SENSITIVITY REPORTS
+    # ---------------------------------------------------------
+    st.markdown("---")
+    st.markdown("### 🧪 Hyperparameter Tuning & Preprocessing Insights")
+    st.caption("Offline 5-fold stratified CV tuning benchmarks, scaler robustness against outliers, and validation curve diagnostics from `reports/`.")
+
+    tune_col1, tune_col2 = st.columns(2)
+
+    with tune_col1:
+        st.markdown("#### 🎛️ Baseline vs. Tuned Models")
+        df_bvt = load_report_csv("baseline_vs_tuned.csv")
+        if df_bvt is not None:
+            fig_bvt = px.bar(
+                df_bvt,
+                x="model",
+                y="test_auc",
+                color="version",
+                barmode="group",
+                text_auto=".4f",
+                title="Held-Out Test ROC-AUC: Baseline vs. Tuned",
+                color_discrete_map={"baseline": "#94A3B8", "tuned": "#10B981"},
+            )
+            fig_bvt.update_layout(height=310, margin=dict(t=40, b=20, l=20, r=20), yaxis_range=[0.88, 0.945])
+            st.plotly_chart(fig_bvt, use_container_width=True)
+            st.dataframe(
+                df_bvt.style.format({"test_auc": "{:.4f}", "test_acc": "{:.4f}", "test_f1": "{:.4f}"}),
+                use_container_width=True,
+                hide_index=True,
+            )
+        else:
+            st.info("`baseline_vs_tuned.csv` not found in `reports/`.")
+
+    with tune_col2:
+        st.markdown("#### ⚖️ Scaler Comparison & Outlier Robustness")
+        df_scaler = load_report_csv("scaler_comparison.csv")
+        if df_scaler is not None:
+            df_scaler_plot = df_scaler.melt(
+                id_vars=["model", "scaler"],
+                value_vars=["cv_auc_clean", "test_auc_trained_on_5pct_outliers"],
+                var_name="condition",
+                value_name="roc_auc",
+            )
+            df_scaler_plot["condition"] = df_scaler_plot["condition"].map({
+                "cv_auc_clean": "Clean 5-Fold CV AUC",
+                "test_auc_trained_on_5pct_outliers": "Test AUC (5% Outliers in Train)",
+            })
+            fig_scaler = px.bar(
+                df_scaler_plot,
+                x="scaler",
+                y="roc_auc",
+                color="condition",
+                facet_col="model",
+                barmode="group",
+                title="Scaler Sensitivity: Clean CV vs. 5% Training Outliers",
+                color_discrete_sequence=["#3B82F6", "#F59E0B"],
+            )
+            fig_scaler.update_layout(height=310, margin=dict(t=55, b=20, l=20, r=20), yaxis_range=[0.90, 0.945])
+            fig_scaler.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+            st.plotly_chart(fig_scaler, use_container_width=True)
+            st.dataframe(
+                df_scaler.style.highlight_max(
+                    subset=["cv_auc_clean", "test_auc_trained_on_5pct_outliers"],
+                    color="#DCFCE7",
+                ).format({
+                    "cv_auc_clean": "{:.4f}",
+                    "cv_std": "{:.4f}",
+                    "test_auc_trained_on_5pct_outliers": "{:.4f}",
+                }),
+                use_container_width=True,
+                hide_index=True,
+            )
+        else:
+            st.info("`scaler_comparison.csv` not found in `reports/`.")
+
+    st.markdown("#### 📐 Validation Curves (Train vs. 5-Fold CV ROC-AUC)")
+    with st.container(border=True):
+        render_report_image(
+            "validation_curves.png",
+            "Train vs. cross-validation ROC-AUC across Random Forest and Gradient Boosting hyperparameters.",
+        )
+
+    st.markdown("---")
+    st.markdown("### 🔬 Permutation Importance & Decision Sensitivity Analysis")
+
+    sens_col1, sens_col2 = st.columns(2)
+
+    with sens_col1:
+        st.markdown("#### 🧩 Permutation Feature Importance")
+        df_perm = load_report_csv("permutation_importance.csv")
+        if df_perm is not None:
+            df_perm_sorted = df_perm.sort_values("auc_drop", ascending=True)
+            fig_perm = px.bar(
+                df_perm_sorted,
+                x="auc_drop",
+                y="feature",
+                error_x="std",
+                orientation="h",
+                title="Test ROC-AUC Drop When Feature Is Shuffled (20 Repeats)",
+                color="auc_drop",
+                color_continuous_scale="Blues",
+            )
+            fig_perm.update_layout(height=360, margin=dict(t=40, b=20, l=20, r=20), coloraxis_showscale=False)
+            st.plotly_chart(fig_perm, use_container_width=True)
+            st.dataframe(
+                df_perm.style.format({"auc_drop": "{:.4f}", "std": "{:.4f}"}),
+                use_container_width=True,
+                hide_index=True,
+            )
+        else:
+            st.info("`permutation_importance.csv` not found in `reports/`.")
+
+    with sens_col2:
+        st.markdown("#### 🗺️ Safe-Zone Map (CGPA × Coding Score)")
+        with st.container(border=True):
+            render_report_image(
+                "safe_zone_heatmap.png",
+                "Placement probability surface over CGPA & Coding Score with 45% (Moderate) and 75% (High) decision contours.",
+            )
+
+    st.markdown("#### 📉 One-at-a-Time Feature Sensitivity Curves")
+    with st.container(border=True):
+        render_report_image(
+            "sensitivity_curves.png",
+            "Placement probability curves across student profiles for coding_score, cgpa, and backlogs (dashed lines at 45% and 75%).",
+        )
+
+    st.markdown("#### 🎯 Decision Threshold Analysis (Moderate 45% / High 75%)")
+    df_thr = load_report_csv("threshold_analysis.csv")
+    if df_thr is not None:
+        def _extract_threshold(row, tier):
+            col = f"min_{row['feature']}_for_{tier}"
+            val = row.get(col)
+            return round(float(val), 2) if pd.notna(val) else None
+
+        df_thr_clean = pd.DataFrame({
+            "Profile": df_thr["profile"],
+            "Feature": df_thr["feature"],
+            "Baseline Value": df_thr["baseline_value"],
+            "Baseline Prob": df_thr["baseline_prob"],
+            "Min for Moderate (45%)": df_thr.apply(lambda r: _extract_threshold(r, "Moderate(45%)"), axis=1),
+            "Min for High (75%)": df_thr.apply(lambda r: _extract_threshold(r, "High(75%)"), axis=1),
+            "Prob @ Min": df_thr["prob_at_min_value"],
+            "Prob @ Max": df_thr["prob_at_max_value"],
+        })
+        selected_prof = st.selectbox(
+            "Filter Threshold Analysis by Student Profile",
+            ["All Profiles"] + df_thr_clean["Profile"].unique().tolist(),
+            key="thr_profile_filter",
+        )
+        df_thr_view = (
+            df_thr_clean
+            if selected_prof == "All Profiles"
+            else df_thr_clean[df_thr_clean["Profile"] == selected_prof]
+        )
+        st.dataframe(
+            df_thr_view.style.format({
+                "Baseline Value": "{:.1f}",
+                "Baseline Prob": "{:.3f}",
+                "Min for Moderate (45%)": lambda v: "—" if pd.isna(v) else f"{v:.2f}",
+                "Min for High (75%)": lambda v: "—" if pd.isna(v) else f"{v:.2f}",
+                "Prob @ Min": "{:.3f}",
+                "Prob @ Max": "{:.3f}",
+            }),
+            use_container_width=True,
+            hide_index=True,
+        )
+        st.caption("Note: `—` indicates that changing that feature alone cannot cross the threshold; multiple profile attributes must improve together.")
+    else:
+        st.info("`threshold_analysis.csv` not found in `reports/`.")
+
 # -------------------------------------------------------------
 # TAB 5: BATCH EVALUATION & TPO ADMIN
 # -------------------------------------------------------------
@@ -1957,7 +2227,7 @@ with tabs[4]:
         # Add random student names
         names = [f"Student_{i+101}" for i in range(len(batch_df))]
         batch_df.insert(0, "student_name", names)
-        
+
     if batch_df is not None:
         # Check required columns
         missing_cols = [c for c in FEATURE_COLUMNS if c not in batch_df.columns]
@@ -1979,36 +2249,88 @@ with tabs[4]:
                 batch_df["Placement_Probability_%"] = probs
                 batch_df["Predicted_Outcome"] = ["Placed" if p == 1 else "Unplaced" for p in preds]
                 batch_df["Risk_Category"] = statuses
+                st.session_state["batch_eval_df"] = batch_df
                 status_box.update(label=f"✅ Batch Evaluation Complete ({len(batch_df)} Students)", state="complete", expanded=False)
-                
-            # Summary Metrics
-            placed_count = sum(preds)
-            total = len(batch_df)
-            rate = (placed_count / total) * 100
-            
-            s1, s2, s3, s4 = st.columns(4)
-            s1.metric("Total Batch Students", total)
-            s2.metric("Predicted Placements", placed_count)
-            s3.metric("Placement Rate", f"{rate:.1f}%")
-            s4.metric("At-Risk Students", total - placed_count)
-            
-            # Distribution plot
-            fig_batch = px.histogram(
-                batch_df, x="Placement_Probability_%", nbins=10,
-                color="Predicted_Outcome",
-                title="Batch Placement Probability Distribution",
-                color_discrete_map={"Placed": "#10B981", "Unplaced": "#EF4444"}
+
+    evaluated_df = st.session_state.get("batch_eval_df")
+    if evaluated_df is not None:
+        # Summary Metrics
+        placed_count = int((evaluated_df["Predicted_Outcome"] == "Placed").sum())
+        total = len(evaluated_df)
+        rate = (placed_count / total) * 100 if total else 0.0
+
+        s1, s2, s3, s4 = st.columns(4)
+        s1.metric("Total Batch Students", total)
+        s2.metric("Predicted Placements", placed_count)
+        s3.metric("Placement Rate", f"{rate:.1f}%")
+        s4.metric("At-Risk Students", total - placed_count)
+
+        # Distribution plot
+        fig_batch = px.histogram(
+            evaluated_df, x="Placement_Probability_%", nbins=10,
+            color="Predicted_Outcome",
+            title="Batch Placement Probability Distribution",
+            color_discrete_map={"Placed": "#10B981", "Unplaced": "#EF4444"}
+        )
+        fig_batch.update_layout(height=280)
+        st.plotly_chart(fig_batch, use_container_width=True)
+
+        # TPO Filters for Placed / At-Risk students & CGPA cutoffs
+        st.markdown("##### 🎯 Filter Students by Placement Status & CGPA Cutoff")
+        tf1, tf2, tf3 = st.columns([1.2, 1.2, 1.0])
+        with tf1:
+            outcome_filter = st.selectbox(
+                "Placement / Risk Group",
+                [
+                    "All Students",
+                    "At-Risk / Unplaced (Needs Coaching)",
+                    "High Risk Only (Prob < 45%)",
+                    "Placed Only",
+                ],
+                key="batch_outcome_filter",
             )
-            fig_batch.update_layout(height=280)
-            st.plotly_chart(fig_batch, use_container_width=True)
-            
-            st.dataframe(batch_df, use_container_width=True)
-            
-            # Download CSV
-            csv_export = batch_df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="📥 Download Evaluated Batch Report (CSV)",
-                data=csv_export,
-                file_name="evaluated_batch_placement_report.csv",
-                mime="text/csv"
+        with tf2:
+            cgpa_condition = st.selectbox(
+                "CGPA Cutoff Filter",
+                ["All CGPAs", "Below CGPA Cutoff (<)", "At or Above CGPA Cutoff (≥)"],
+                key="batch_cgpa_condition",
             )
+        with tf3:
+            cgpa_cutoff = st.slider(
+                "CGPA Cutoff",
+                min_value=5.0,
+                max_value=10.0,
+                value=7.0,
+                step=0.1,
+                key="batch_cgpa_cutoff",
+            )
+
+        filtered_batch_df = evaluated_df.copy()
+        if outcome_filter == "At-Risk / Unplaced (Needs Coaching)":
+            filtered_batch_df = filtered_batch_df[filtered_batch_df["Predicted_Outcome"] == "Unplaced"]
+        elif outcome_filter == "High Risk Only (Prob < 45%)":
+            filtered_batch_df = filtered_batch_df[filtered_batch_df["Placement_Probability_%"] < 45.0]
+        elif outcome_filter == "Placed Only":
+            filtered_batch_df = filtered_batch_df[filtered_batch_df["Predicted_Outcome"] == "Placed"]
+
+        if cgpa_condition == "Below CGPA Cutoff (<)":
+            filtered_batch_df = filtered_batch_df[filtered_batch_df["cgpa"] < cgpa_cutoff]
+        elif cgpa_condition == "At or Above CGPA Cutoff (≥)":
+            filtered_batch_df = filtered_batch_df[filtered_batch_df["cgpa"] >= cgpa_cutoff]
+
+        st.caption(f"Showing **{len(filtered_batch_df)}** of **{total}** evaluated students.")
+        st.dataframe(filtered_batch_df, use_container_width=True)
+
+        # Download CSV (exports current filtered view for coaching or full batch)
+        csv_export = filtered_batch_df.to_csv(index=False).encode('utf-8')
+        export_filename = (
+            "at_risk_coaching_students.csv"
+            if outcome_filter in ("At-Risk / Unplaced (Needs Coaching)", "High Risk Only (Prob < 45%)")
+            else "evaluated_batch_placement_report.csv"
+        )
+        st.download_button(
+            label="📥 Download Filtered Batch Report (CSV)",
+            data=csv_export,
+            file_name=export_filename,
+            mime="text/csv"
+        )

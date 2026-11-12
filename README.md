@@ -34,19 +34,27 @@ An end-to-end Machine Learning web application combining **Classification** (pre
 ## 📁 Project Architecture
 
 ```
-placement_system/
-├── app.py                     # Interactive Streamlit Web Application
-├── requirements.txt           # Dependencies
+ai-placement-prediction-recommendation/
+├── .streamlit/
+│   └── config.toml                # Streamlit theme & server configuration
+├── app.py                         # Interactive Streamlit Web Application
+├── requirements.txt               # Runtime dependencies
 ├── data/
-│   ├── placement_system.db    # SQLite Database (jobs, student_profiles)
+│   ├── placement_system.db        # SQLite Database (jobs, student_profiles)
 │   └── placement_training_data.csv # 3,000 synthetic records with realistic correlations
 ├── models/
-│   └── placement_model.joblib # Serialized champion model, scaler, and metrics
-└── src/
-    ├── database.py            # SQLite schema, initial seeding, and queries
-    ├── generate_dataset.py    # Ground truth dataset generator
-    ├── train_model.py         # Multi-model training, evaluation & predictor
-    └── recommender.py         # Content-based recommendation & skill gap engine
+│   └── placement_model.joblib     # Serialized tuned Pipeline bundle and metrics
+├── reports/                       # Offline tuning, scaler, and sensitivity artifacts
+├── src/
+│   ├── database.py                # SQLite schema, seeding, duplicate-safe drive inserts
+│   ├── generate_dataset.py        # Ground truth dataset generator
+│   ├── train_model.py             # Tuned Pipeline training, CV evaluation & predictor
+│   ├── tune_and_analyze.py        # Hyperparameter search & sensitivity report generator
+│   └── recommender.py             # Content-based recommendation & skill gap engine
+└── tests/
+    ├── test_database.py           # SQLite initialization, seeding & profile persistence tests
+    ├── test_predictor.py          # Prediction bounds & recommendation rule tests
+    └── test_recommender.py        # Eligibility cutoffs & skill-gap matching tests
 ```
 
 ---
@@ -61,5 +69,27 @@ Open [http://localhost:8501](http://localhost:8501) in your browser.
 
 ### 2. Retrain or Evaluate the Model Manually
 ```bash
+python -c "from src.train_model import train_and_evaluate_models; train_and_evaluate_models()"
 python src/train_model.py
 ```
+
+---
+
+## 🧪 Running Automated Tests
+
+Install `pytest` (if not already installed in your virtual environment) and run the full test suite:
+
+```bash
+pip install pytest
+pytest -v
+```
+
+---
+
+## ☁️ Deploying to Streamlit Community Cloud
+
+1. Push the repository to GitHub (including `app.py`, `requirements.txt`, `.streamlit/config.toml`, `src/`, `models/`, and `reports/`).
+2. Sign in to [share.streamlit.io](https://share.streamlit.io) and click **New app**.
+3. Select your repository and branch, and set **Main file path** to `app.py` (or `ai-placement-prediction-recommendation/app.py` if deploying from the parent repository root).
+4. Under **Advanced settings**, select **Python 3.9+** and confirm `requirements.txt` is detected automatically.
+5. Click **Deploy** — the app uses `.streamlit/config.toml` defaults and automatically initializes `data/placement_system.db` on startup.

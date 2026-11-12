@@ -209,6 +209,57 @@ def get_all_jobs():
     conn.close()
     return df
 
+
+def add_job_drive(
+    company_name,
+    role_title,
+    department,
+    min_cgpa,
+    max_backlogs,
+    required_skills,
+    preferred_skills,
+    salary_lpa,
+    location,
+    description,
+):
+    """Insert a new job drive if (company_name, role_title) does not already exist."""
+    clean_company = company_name.strip()
+    clean_role = role_title.strip()
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id FROM jobs WHERE LOWER(TRIM(company_name)) = LOWER(?) AND LOWER(TRIM(role_title)) = LOWER(?)",
+        (clean_company, clean_role),
+    )
+    if cursor.fetchone() is not None:
+        conn.close()
+        return False, None
+
+    cursor.execute(
+        """
+        INSERT INTO jobs (
+            company_name, role_title, department, min_cgpa, max_backlogs,
+            required_skills, preferred_skills, salary_lpa, location, description
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            clean_company,
+            clean_role,
+            department,
+            min_cgpa,
+            max_backlogs,
+            required_skills.strip(),
+            (preferred_skills or "").strip(),
+            salary_lpa,
+            location.strip(),
+            (description or "").strip(),
+        ),
+    )
+    conn.commit()
+    job_id = cursor.lastrowid
+    conn.close()
+    return True, job_id
+
 def save_student_profile(name, email, branch, cgpa, ssc, hsc, internships, projects, coding, soft, backlogs, skills, prob, status):
     conn = get_connection()
     cursor = conn.cursor()

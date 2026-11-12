@@ -10,6 +10,7 @@ import joblib
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
@@ -59,14 +60,32 @@ def train_and_evaluate_models():
         X, y, test_size=0.20, random_state=42, stratify=y
     )
     
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
-    
+    def make_pipe(estimator):
+        return Pipeline([("scale", StandardScaler()), ("clf", estimator)])
+
     candidate_models = {
-        "Random Forest": RandomForestClassifier(n_estimators=150, max_depth=10, min_samples_split=4, random_state=42),
-        "Gradient Boosting": GradientBoostingClassifier(n_estimators=120, learning_rate=0.08, max_depth=4, random_state=42),
-        "Logistic Regression": LogisticRegression(max_iter=1000, random_state=42)
+        "Random Forest": make_pipe(RandomForestClassifier(
+            n_estimators=235,
+            max_depth=9,
+            min_samples_split=2,
+            min_samples_leaf=8,
+            max_features="sqrt",
+            random_state=42,
+        )),
+        "Gradient Boosting": make_pipe(GradientBoostingClassifier(
+            n_estimators=120,
+            learning_rate=0.061556316037040225,
+            max_depth=2,
+            min_samples_leaf=13,
+            subsample=0.718509402281633,
+            random_state=42,
+        )),
+        "Logistic Regression": make_pipe(LogisticRegression(
+            C=0.05,
+            penalty="l2",
+            max_iter=2000,
+            random_state=42,
+        )),
     }
     
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
@@ -80,16 +99,16 @@ def train_and_evaluate_models():
     print("TRAINING & EVALUATION OF PLACEMENT PREDICTION MODELS")
     print("=" * 60)
     
-    for name, model in candidate_models.items():
-        # Train on scaled data
-        model.fit(X_train_scaled, y_train)
+    for name, pipe in candidate_models.items():
+        # Train pipeline (scaler fits strictly inside training data/folds)
+        pipe.fit(X_train, y_train)
         
-        # Predictions
-        y_pred = model.predict(X_test_scaled)
-        y_prob = model.predict_proba(X_test_scaled)[:, 1]
+        # Predictions on held-out test set
+        y_pred = pipe.predict(X_test)
+        y_prob = pipe.predict_proba(X_test)[:, 1]
         
-        # 5-Fold Cross Validation
-        cv_scores = cross_val_score(model, X_train_scaled, y_train, cv=cv, scoring="roc_auc")
+        # 5-Fold Cross Validation (Pipeline prevents scaler leakage across folds)
+        cv_scores = cross_val_score(pipe, X_train, y_train, cv=cv, scoring="roc_auc")
         
         acc = accuracy_score(y_test, y_pred)
         prec = precision_score(y_test, y_pred)
@@ -116,17 +135,18 @@ def train_and_evaluate_models():
         if roc_auc > best_roc_auc:
             best_roc_auc = roc_auc
             best_model_name = name
-            best_model = model
+            best_model = pipe
             
     print("=" * 60)
     print(f"Champion Model Selected: {best_model_name} with Test ROC-AUC: {best_roc_auc:.4f}")
     print("=" * 60)
     
-    # Feature importances
-    if hasattr(best_model, "feature_importances_"):
-        raw_imp = best_model.feature_importances_
-    elif hasattr(best_model, "coef_"):
-        raw_imp = np.abs(best_model.coef_[0])
+    # Feature importances from the champion classifier step
+    best_clf = best_model.named_steps["clf"]
+    if hasattr(best_clf, "feature_importances_"):
+        raw_imp = best_clf.feature_importances_
+    elif hasattr(best_clf, "coef_"):
+        raw_imp = np.abs(best_clf.coef_[0])
     else:
         raw_imp = np.ones(len(FEATURE_COLUMNS))
         
@@ -135,13 +155,13 @@ def train_and_evaluate_models():
     feat_imp = dict(sorted(feat_imp.items(), key=lambda item: item[1], reverse=True))
     
     # ROC curve points for dashboard visualization
-    best_probs = best_model.predict_proba(X_test_scaled)[:, 1]
+    best_probs = best_model.predict_proba(X_test)[:, 1]
     fpr, tpr, _ = roc_curve(y_test, best_probs)
     
     model_bundle = {
         "model_name": best_model_name,
         "model": best_model,
-        "scaler": scaler,
+        "scaler": best_model.named_steps["scale"],
         "feature_names": FEATURE_COLUMNS,
         "metrics": model_evaluations[best_model_name],
         "all_model_evaluations": model_evaluations,
@@ -183,10 +203,13 @@ class PlacementPredictor:
             recommendations: list[str] of actionable suggestions based on gaps
         """
         features_df = pd.DataFrame([{col: float(profile.get(col, 0)) for col in self.feature_names}])
-        scaled_features = self.scaler.transform(features_df)
-        
-        prob = float(self.model.predict_proba(scaled_features)[0][1])
-        pred = int(self.model.predict(scaled_features)[0])
+        if isinstance(self.model, Pipeline):
+            prob = float(self.model.predict_proba(features_df)[0][1])
+            pred = int(self.model.predict(features_df)[0])
+        else:
+            scaled_features = self.scaler.transform(features_df)
+            prob = float(self.model.predict_proba(scaled_features)[0][1])
+            pred = int(self.model.predict(scaled_features)[0])
         
         if prob >= 0.75:
             status = "High Placement Probability"
