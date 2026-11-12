@@ -2205,10 +2205,85 @@ with tabs[4]:
     st.markdown("<div class='main-title'>College Batch Placement Evaluator</div>", unsafe_allow_html=True)
     st.markdown("<div class='subtitle'>Allows placement officers (TPO) to assess an entire batch of graduating students simultaneously.</div>", unsafe_allow_html=True)
     
-    b_col1, b_col2 = st.columns([1, 1])
+    # Helper to parse and normalize uploaded batch CSV
+    def parse_and_normalize_batch_csv(uploaded_file):
+        try:
+            uploaded_file.seek(0)
+            df = pd.read_csv(uploaded_file)
+            if len(df.columns) <= 1:
+                uploaded_file.seek(0)
+                df = pd.read_csv(uploaded_file, sep=None, engine="python")
+        except Exception:
+            uploaded_file.seek(0)
+            df = pd.read_csv(uploaded_file, sep=None, engine="python")
+
+        # Strip BOM, whitespace, quotes, lowercase
+        clean_map = {}
+        for col in df.columns:
+            c_str = str(col).strip().lstrip("\ufeff").strip('"').strip("'")
+            c_clean = c_str.lower().replace(" ", "_").replace("-", "_")
+            clean_map[col] = c_clean
+        df = df.rename(columns=clean_map)
+
+        # Synonym aliases for standard FEATURE_COLUMNS
+        synonyms = {
+            "cgpa": ["cgpa", "gpa", "btech_cgpa", "overall_cgpa", "college_cgpa"],
+            "ssc_percentage": ["ssc_percentage", "ssc", "10th", "10th_percentage", "tenth_percentage", "class_10", "class_10th", "ssc_%", "10th_%"],
+            "hsc_percentage": ["hsc_percentage", "hsc", "12th", "12th_percentage", "twelfth_percentage", "class_12", "class_12th", "hsc_%", "12th_%"],
+            "internships": ["internships", "internship", "internship_count", "num_internships", "internships_completed"],
+            "projects": ["projects", "project", "project_count", "num_projects", "projects_completed"],
+            "coding_score": ["coding_score", "coding", "dsa_score", "technical_score", "coding_test_score", "dsa"],
+            "soft_skills_score": ["soft_skills_score", "soft_skills", "soft_skill", "communication_score", "soft_skills_rating"],
+            "certifications_count": ["certifications_count", "certifications", "certification_count", "certs", "num_certifications"],
+            "backlogs": ["backlogs", "backlog", "standing_backlogs", "active_backlogs", "arrears", "history_of_backlogs"]
+        }
+
+        rename_map = {}
+        for canon, aliases in synonyms.items():
+            if canon in df.columns:
+                continue
+            for alias in aliases:
+                if alias in df.columns:
+                    rename_map[alias] = canon
+                    break
+        if rename_map:
+            df = df.rename(columns=rename_map)
+
+        return df
+
+    b_col1, b_col2 = st.columns([1.2, 0.8])
     with b_col1:
         st.markdown("##### 📥 Upload Student CSV")
         uploaded_file = st.file_uploader("Upload CSV formatted with student metrics", type=["csv"])
+
+        # Direct sample template download
+        sample_batch_template = pd.DataFrame([
+            {
+                "student_name": "Aarav Sharma", "email": "aarav.sharma@college.edu", "branch": "Computer Science",
+                "cgpa": 8.5, "ssc_percentage": 88.0, "hsc_percentage": 85.0,
+                "internships": 2, "projects": 3, "coding_score": 82.0, "soft_skills_score": 8.0,
+                "certifications_count": 2, "backlogs": 0
+            },
+            {
+                "student_name": "Ananya Verma", "email": "ananya.verma@college.edu", "branch": "Information Technology",
+                "cgpa": 7.3, "ssc_percentage": 78.0, "hsc_percentage": 72.0,
+                "internships": 1, "projects": 2, "coding_score": 65.0, "soft_skills_score": 6.5,
+                "certifications_count": 1, "backlogs": 0
+            },
+            {
+                "student_name": "Priya Iyer", "email": "priya.iyer@college.edu", "branch": "Mechanical",
+                "cgpa": 5.8, "ssc_percentage": 60.0, "hsc_percentage": 55.0,
+                "internships": 0, "projects": 1, "coding_score": 38.0, "soft_skills_score": 4.5,
+                "certifications_count": 0, "backlogs": 2
+            }
+        ])
+        st.download_button(
+            label="📄 Download Ready-to-Use CSV Template",
+            data=sample_batch_template.to_csv(index=False).encode("utf-8"),
+            file_name="sample_batch_template.csv",
+            mime="text/csv",
+            help="Download a pre-formatted template with all required student metrics."
+        )
         
     with b_col2:
         st.markdown("##### ⚡ Quick Demonstration")
@@ -2217,7 +2292,7 @@ with tabs[4]:
     batch_df = None
     if uploaded_file is not None:
         try:
-            batch_df = pd.read_csv(uploaded_file)
+            batch_df = parse_and_normalize_batch_csv(uploaded_file)
             st.success(f"Uploaded CSV with {len(batch_df)} student rows.")
         except Exception as e:
             st.error(f"Error reading CSV: {e}")
@@ -2232,7 +2307,21 @@ with tabs[4]:
         # Check required columns
         missing_cols = [c for c in FEATURE_COLUMNS if c not in batch_df.columns]
         if missing_cols:
-            st.error(f"Missing required columns in CSV: {missing_cols}")
+            st.error(f"❌ Missing required columns in CSV: `{missing_cols}`")
+            st.info(f"📋 Columns detected in your uploaded file: `{list(batch_df.columns)}`")
+            st.markdown(
+                "💡 **Expected Column Names (any case or format supported):**\n"
+                "- `cgpa`\n"
+                "- `ssc_percentage` (or `10th`, `ssc`)\n"
+                "- `hsc_percentage` (or `12th`, `hsc`)\n"
+                "- `internships`\n"
+                "- `projects`\n"
+                "- `coding_score` (or `coding`, `dsa`)\n"
+                "- `soft_skills_score` (or `soft_skills`)\n"
+                "- `certifications_count` (or `certifications`)\n"
+                "- `backlogs`\n"
+                "\n*You can also click **'Download Ready-to-Use CSV Template'** above.*"
+            )
         else:
             with st.status("🚀 Running AI Batch Placement Engine...", expanded=True) as status_box:
                 st.write("1. Validating & scaling student feature matrix...")
