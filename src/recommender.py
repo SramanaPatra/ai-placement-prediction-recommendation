@@ -1,6 +1,13 @@
+import os
+import sys
 import re
 import numpy as np
 import pandas as pd
+
+SRC_DIR = os.path.dirname(os.path.abspath(__file__))
+if SRC_DIR not in sys.path:
+    sys.path.append(SRC_DIR)
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from database import get_all_jobs

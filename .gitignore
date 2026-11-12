@@ -12,3 +12,6 @@ venv/
 env/
 # Environment variables and secrets
 .env
+.venv/
+venv/
+

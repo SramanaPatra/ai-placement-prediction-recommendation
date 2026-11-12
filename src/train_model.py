@@ -1,4 +1,11 @@
 import os
+import sys
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC_DIR = os.path.join(BASE_DIR, "src")
+if SRC_DIR not in sys.path:
+    sys.path.append(SRC_DIR)
+
 import joblib
 import numpy as np
 import pandas as pd
