@@ -12,7 +12,14 @@ SRC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 if SRC_DIR not in sys.path:
     sys.path.append(SRC_DIR)
 
-from database import init_db, insert_initial_jobs, get_all_jobs, save_student_profile, get_recent_profiles, add_job_drive
+from database import (
+    init_db, insert_initial_jobs, get_all_jobs,
+    save_student_profile, get_recent_profiles, add_job_drive,
+    # Change 4: application tracking
+    save_application, get_applications, delete_application,
+    # Change 5: assessment history
+    get_all_profiles, delete_profile,
+)
 from train_model import PlacementPredictor, FEATURE_COLUMNS
 from recommender import JobRecommender
 
@@ -1525,7 +1532,8 @@ tabs = st.tabs([
     "💼 Job Recommendation",
     "🏢 Company Database",
     "📊 Model Analytics",
-    "👥 Batch Evaluation"
+    "👥 Batch Evaluation",
+    "📂 Assessment History",
 ])
 
 # -------------------------------------------------------------
@@ -1834,6 +1842,62 @@ with tabs[1]:
                 with st.expander("📄 View Role Description"):
                     st.write(job['description'])
                     st.write(f"**Eligibility Criteria:** Minimum CGPA: `{job['min_cgpa']}`, Max Backlogs: `{job['max_backlogs']}`")
+
+                # Change 4: Save / Apply button
+                st.markdown("---")
+                apply_key = f"apply_{job['job_id']}_{idx}"
+                if st.button(f"💾 Save / Apply — {job['company_name']}", key=apply_key, use_container_width=False):
+                    candidate_name = name if name and name.strip() else "Anonymous"
+                    app_id = save_application(
+                        student_name=candidate_name,
+                        job_id=job["job_id"],
+                        company_name=job["company_name"],
+                        role_title=job["role_title"],
+                        department=job["department"],
+                        salary_lpa=job["salary_lpa"],
+                        match_percentage=job["match_percentage"],
+                        eligibility_status=job["eligibility_status"],
+                    )
+                    if app_id == -1:
+                        st.info(f"ℹ️ **{job['company_name']} — {job['role_title']}** is already in your shortlist.")
+                    else:
+                        st.success(f"✅ **{job['company_name']} — {job['role_title']}** saved to your shortlist! (ID: {app_id})")
+
+    # Change 4: My Application Shortlist Panel
+    st.markdown("---")
+    with st.expander("📋 My Application Shortlist — View & Manage Saved Roles", expanded=False):
+        shortlist_name = name if name and name.strip() else "Anonymous"
+        df_apps = get_applications(student_name=shortlist_name)
+        if df_apps.empty:
+            st.info("No roles saved yet. Click **💾 Save / Apply** on any job card above to build your shortlist.")
+        else:
+            st.markdown(f"**{len(df_apps)} saved role(s) for {shortlist_name}:**")
+            for _, app_row in df_apps.iterrows():
+                a_col1, a_col2, a_col3 = st.columns([3, 1, 1])
+                with a_col1:
+                    badge_col = "#047857" if app_row["eligibility_status"] == "Eligible" else "#B91C1C"
+                    st.markdown(
+                        f"**{app_row['company_name']}** — {app_row['role_title']}  \n"
+                        f"🏢 {app_row['department']} &nbsp;|&nbsp; 💰 ₹ {app_row['salary_lpa']} LPA &nbsp;|&nbsp; "
+                        f"<span style='color:{badge_col}; font-weight:600;'>{app_row['eligibility_status']}</span>",
+                        unsafe_allow_html=True,
+                    )
+                with a_col2:
+                    st.metric("Match", f"{app_row['match_percentage']:.1f}%")
+                with a_col3:
+                    if st.button("❌ Remove", key=f"del_app_{app_row['id']}"):
+                        delete_application(int(app_row["id"]))
+                        st.rerun()
+                st.caption(f"Saved on {app_row['applied_at']}")
+                st.markdown("---")
+
+            csv_apps = df_apps.to_csv(index=False).encode("utf-8")
+            st.download_button(
+                label="📥 Download My Shortlist (CSV)",
+                data=csv_apps,
+                file_name=f"{shortlist_name.lower().replace(' ', '_')}_shortlist.csv",
+                mime="text/csv",
+            )
 
 # -------------------------------------------------------------
 # TAB 3: COMPANY & JOB OPENINGS DATABASE (DB)
@@ -2423,3 +2487,257 @@ with tabs[4]:
             file_name=export_filename,
             mime="text/csv"
         )
+
+
+# -------------------------------------------------------------
+# TAB 6: ASSESSMENT HISTORY (Change 5)
+# -------------------------------------------------------------
+with tabs[5]:
+    st.markdown("<div class='main-title'>Saved Assessment History</div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='subtitle'>Browse, compare, and manage all candidate placement assessments "
+        "saved from Tab 1. Download the full roster or delete individual records.</div>",
+        unsafe_allow_html=True,
+    )
+
+    # Load all profiles
+    df_hist = get_all_profiles()
+
+    if df_hist.empty:
+        st.info(
+            "No assessments saved yet. Run a prediction in **🎯 Placement Prediction** (Tab 1) "
+            "and click **🚀 Run AI Placement Prediction** to save a candidate record."
+        )
+    else:
+        # ----- Summary KPIs -----
+        h1, h2, h3, h4 = st.columns(4)
+        h1.metric("Total Assessments", len(df_hist))
+        h2.metric("Avg Placement Prob", f"{df_hist['placement_probability'].mean() * 100:.1f}%")
+        h3.metric(
+            "High Probability (≥ 75%)",
+            int((df_hist["placement_probability"] >= 0.75).sum()),
+        )
+        h4.metric("Avg CGPA", f"{df_hist['cgpa'].mean():.2f}")
+
+        st.markdown("---")
+
+        # ----- Search & Filter -----
+        sh1, sh2, sh3 = st.columns([2, 1, 1])
+        with sh1:
+            hist_search = st.text_input(
+                "🔍 Search by Name, Branch, or Skills",
+                placeholder="e.g. Aarav, Python, Computer Science",
+                key="hist_search",
+            )
+        with sh2:
+            hist_status_filter = st.selectbox(
+                "Filter by Readiness Status",
+                ["All", "High Probability (≥75%)", "Moderate (45-75%)", "Low (<45%)"],
+                key="hist_status",
+            )
+        with sh3:
+            hist_sort = st.selectbox(
+                "Sort By",
+                ["Newest First", "Oldest First", "Highest Probability", "Lowest Probability", "Highest CGPA"],
+                key="hist_sort",
+            )
+
+        df_view = df_hist.copy()
+
+        # Apply search
+        if hist_search.strip():
+            q = hist_search.strip()
+            mask = (
+                df_view["full_name"].str.contains(q, case=False, na=False)
+                | df_view["branch"].str.contains(q, case=False, na=False)
+                | df_view["skills"].str.contains(q, case=False, na=False)
+                | df_view["prediction_status"].str.contains(q, case=False, na=False)
+            )
+            df_view = df_view[mask]
+
+        # Apply status filter
+        if hist_status_filter == "High Probability (≥75%)":
+            df_view = df_view[df_view["placement_probability"] >= 0.75]
+        elif hist_status_filter == "Moderate (45-75%)":
+            df_view = df_view[
+                (df_view["placement_probability"] >= 0.45) & (df_view["placement_probability"] < 0.75)
+            ]
+        elif hist_status_filter == "Low (<45%)":
+            df_view = df_view[df_view["placement_probability"] < 0.45]
+
+        # Apply sort
+        sort_map = {
+            "Newest First": ("id", False),
+            "Oldest First": ("id", True),
+            "Highest Probability": ("placement_probability", False),
+            "Lowest Probability": ("placement_probability", True),
+            "Highest CGPA": ("cgpa", False),
+        }
+        sort_col, sort_asc = sort_map[hist_sort]
+        df_view = df_view.sort_values(sort_col, ascending=sort_asc).reset_index(drop=True)
+
+        st.caption(f"Showing **{len(df_view)}** of **{len(df_hist)}** records.")
+
+        # ----- Styled Data Table -----
+        display_cols = [
+            "id", "full_name", "branch", "cgpa", "placement_probability",
+            "prediction_status", "history_of_backlogs", "skills", "created_at",
+        ]
+        existing_display = [c for c in display_cols if c in df_view.columns]
+        st.dataframe(
+            df_view[existing_display].rename(columns={
+                "id": "ID",
+                "full_name": "Name",
+                "branch": "Branch",
+                "cgpa": "CGPA",
+                "placement_probability": "Prob (%)",
+                "prediction_status": "Status",
+                "history_of_backlogs": "Backlogs",
+                "skills": "Skills",
+                "created_at": "Saved At",
+            }).assign(**{"Prob (%)": lambda d: (d["Prob (%)"] * 100).round(1)})
+            if "Prob (%)" in df_view[existing_display].rename(columns={"placement_probability": "Prob (%)"}).columns
+            else df_view[existing_display],
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        # ----- Bulk Download -----
+        csv_all = df_view.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="📥 Download All Visible Assessments (CSV)",
+            data=csv_all,
+            file_name="assessment_history.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+
+        st.markdown("---")
+
+        # ----- Side-by-side Profile Comparison (Radar Chart) -----
+        st.markdown("### 🔍 Compare Two Candidate Profiles")
+        st.caption(
+            "Select two profile IDs to overlay their benchmarks on a radar chart for direct comparison."
+        )
+
+        profile_ids = df_hist["id"].tolist()
+        id_name_map = {
+            int(row["id"]): f"#{int(row['id'])} — {row['full_name']} (CGPA {row['cgpa']:.2f})"
+            for _, row in df_hist.iterrows()
+        }
+
+        cmp1, cmp2 = st.columns(2)
+        with cmp1:
+            sel_id_a = st.selectbox(
+                "Profile A",
+                options=profile_ids,
+                format_func=lambda i: id_name_map.get(i, str(i)),
+                key="cmp_a",
+            )
+        with cmp2:
+            default_b = profile_ids[1] if len(profile_ids) > 1 else profile_ids[0]
+            sel_id_b = st.selectbox(
+                "Profile B",
+                options=profile_ids,
+                index=1 if len(profile_ids) > 1 else 0,
+                format_func=lambda i: id_name_map.get(i, str(i)),
+                key="cmp_b",
+            )
+
+        if st.button("📊 Generate Comparison Radar Chart", key="cmp_btn"):
+            row_a = df_hist[df_hist["id"] == sel_id_a].iloc[0]
+            row_b = df_hist[df_hist["id"] == sel_id_b].iloc[0]
+
+            radar_cats = ["CGPA", "Coding Score", "Projects", "Internships", "Soft Skills"]
+
+            def _profile_radar_vals(row):
+                return [
+                    round((row["cgpa"] / 10.0) * 100, 1),
+                    round(min(float(row.get("coding_rating", 0)) / 100.0, 1.0) * 100, 1),
+                    round(min(float(row.get("projects_count", 0)) / 5.0, 1.0) * 100, 1),
+                    round(min(float(row.get("internships_count", 0)) / 3.0, 1.0) * 100, 1),
+                    round((float(row.get("soft_skills_rating", 0)) / 10.0) * 100, 1),
+                ]
+
+            vals_a = _profile_radar_vals(row_a)
+            vals_b = _profile_radar_vals(row_b)
+            bench_vals = [82.0, 80.0, 65.0, 67.0, 80.0]
+
+            # go is already imported at the top of this file
+            fig_cmp = go.Figure()
+            fig_cmp.add_trace(go.Scatterpolar(
+                r=vals_a + [vals_a[0]],
+                theta=radar_cats + [radar_cats[0]],
+                fill="toself",
+                name=f"#{int(row_a['id'])} {row_a['full_name']}",
+                line=dict(color="#3B82F6", width=2.5),
+                fillcolor="rgba(59, 130, 246, 0.20)",
+            ))
+            fig_cmp.add_trace(go.Scatterpolar(
+                r=vals_b + [vals_b[0]],
+                theta=radar_cats + [radar_cats[0]],
+                fill="toself",
+                name=f"#{int(row_b['id'])} {row_b['full_name']}",
+                line=dict(color="#8B5CF6", width=2.5),
+                fillcolor="rgba(139, 92, 246, 0.18)",
+            ))
+            fig_cmp.add_trace(go.Scatterpolar(
+                r=bench_vals + [bench_vals[0]],
+                theta=radar_cats + [radar_cats[0]],
+                fill="toself",
+                name="Placed Benchmark",
+                line=dict(color="#10B981", width=2, dash="dash"),
+                fillcolor="rgba(16, 185, 129, 0.10)",
+            ))
+            fig_cmp.update_layout(
+                title=dict(
+                    text="Profile Comparison vs. Placed Benchmark (%)",
+                    font=dict(size=15, color="#1E293B"),
+                ),
+                polar=dict(
+                    radialaxis=dict(visible=True, range=[0, 100], tickfont=dict(size=10)),
+                    bgcolor="rgba(255,255,255,0.45)",
+                ),
+                showlegend=True,
+                legend=dict(orientation="h", yanchor="bottom", y=-0.28, xanchor="center", x=0.5),
+                height=380,
+                margin=dict(l=40, r=40, t=55, b=60),
+                paper_bgcolor="rgba(0,0,0,0)",
+            )
+            st.plotly_chart(fig_cmp, use_container_width=True)
+
+            # Probability comparison
+            prob_a = float(row_a["placement_probability"]) * 100
+            prob_b = float(row_b["placement_probability"]) * 100
+            pa_col, pb_col = st.columns(2)
+            pa_col.metric(
+                f"#{int(row_a['id'])} {row_a['full_name']}",
+                f"{prob_a:.1f}%",
+                delta=f"{prob_a - prob_b:+.1f}% vs B",
+            )
+            pb_col.metric(
+                f"#{int(row_b['id'])} {row_b['full_name']}",
+                f"{prob_b:.1f}%",
+                delta=f"{prob_b - prob_a:+.1f}% vs A",
+            )
+
+        st.markdown("---")
+
+        # ----- Per-Row Delete -----
+        st.markdown("### 🗑️ Delete Individual Assessment")
+        del_col1, del_col2 = st.columns([2, 1])
+        with del_col1:
+            del_id = st.selectbox(
+                "Select Profile ID to Delete",
+                options=profile_ids,
+                format_func=lambda i: id_name_map.get(i, str(i)),
+                key="del_profile_id",
+            )
+        with del_col2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("🗑️ Delete This Assessment", key="del_profile_btn"):
+                if delete_profile(int(del_id)):
+                    st.success(f"✅ Profile #{del_id} deleted successfully.")
+                    st.rerun()
+                else:
+                    st.error(f"❌ Could not delete Profile #{del_id}.")
